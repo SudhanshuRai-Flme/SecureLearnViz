@@ -1,0 +1,66 @@
+## 1. Virtual Memory & Page Protection Visualizer  
+**File**: `client/src/components/PageProtectionVisualizer.tsx`  
+**Goal**: Show how virtual addresses map to physical frames, highlight page‑level permissions, and animate protection faults.  
+**UI & Behavior**:  
+- Render a process address space as a column of pages (cards).  
+- Each page card displays its virtual address, physical frame number (if mapped), and permission bits (R/W/X).  
+- Input controls to:  
+  - “Trigger Read” or “Trigger Write” on a given page index.  
+  - Toggle permission bits dynamically.  
+- When an illegal access occurs, animate a red “⚠️ Page Fault” overlay and show a brief tooltip explaining the fault.  
+- Smooth animations (fade, slide) for permission changes and fault overlays—use Framer Motion’s spring easing.  
+
+## 2. Heap Allocation & Fragmentation Visualizer  
+**File**: `client/src/components/HeapAllocatorVisualizer.tsx`  
+**Goal**: Animate malloc/free operations, show fragmentation, and illustrate how heap metadata can be corrupted.  
+**UI & Behavior**:  
+- Display a horizontal “heap bar” divided into chunks (allocated vs. free), each labeled with size and metadata.  
+- Controls to:  
+  - Allocate a chunk of a specified size.  
+  - Free a selected chunk.  
+- When freeing, animate coalescing adjacent free chunks (merge animation).  
+- Simulate a “buffer overflow” button that lets the user overwrite adjacent metadata: show a subtle corruption animation (e.g., metadata field turning red).  
+- Use smooth width‑transition animations for chunk resizing and coalescing (Framer Motion spring/ease).  
+
+## 3. Cross‑Site Scripting (XSS) Visualizer  
+**File**: `client/src/components/XSSAttackVisualizer.tsx`  
+**Goal**: Demonstrate sanitized vs. unsanitized user input in the browser.  
+**UI & Behavior**:  
+- Text input for arbitrary HTML/JS.  
+- Toggle switch “Sanitize Output” (ON = escape HTML tags; OFF = inject raw HTML).  
+- Live preview box styled as a browser window using Tailwind.  
+- Stepper animation (Framer Motion) through:  
+  1. User Input  
+  2. Server Response  
+  3. Browser Rendering  
+- Tooltips under each step explaining what happens.  
+
+---
+
+### Subtle OS Section Revamp & Smooth Animations  
+- In `HomePage.tsx`, under “OS Fundamentals,” reorganize the list so the new visualizers appear first, each with a one‑sentence summary.  
+- Add Framer Motion wrapper around the entire OS section for a subtle fade‑in on page load.  
+- Ensure all stepper and chunk animations use smooth easing (springs or easeInOut) for consistency.
+
+---
+
+### Implementation Details for All Components  
+- Use **React Hooks** (`useState`, `useEffect`) for state and controls.  
+- Use **Framer Motion** for all animations, with spring/ease settings.  
+- Style entirely with **Tailwind CSS**, ensuring mobile responsiveness.  
+- Type all state and props in **TypeScript**.  
+
+---
+
+### Integration & Deliverables  
+- Export each component from its file.  
+- In `client/src/pages/HomePage.tsx`:  
+  - Import and place under “OS Fundamentals” in this order:  
+    1. PageProtectionVisualizer  
+    2. HeapAllocatorVisualizer  
+    3. XSSAttackVisualizer  
+  - Wrap the OS section in a `<motion.div>` with a fade‑in effect.  
+- **Deliver only**:  
+  1. Full contents of the three new component files (`*.tsx`).  
+  2. The updated import statements and JSX snippet for the OS section in `HomePage.tsx`.  
+  3. No other file modifications.
