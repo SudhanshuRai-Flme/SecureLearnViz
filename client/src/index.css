@@ -1,0 +1,138 @@
+/* Font families */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Poppins:wght@500;600;700&family=Fira+Code:wght@400;500&display=swap');
+
+/* Remix icons */
+@import url('https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 240 10% 3.9%;
+  --foreground: 0 0% 98%;
+  --muted: 240 3.7% 15.9%;
+  --muted-foreground: 240 5% 64.9%;
+  --popover: 240 10% 3.9%;
+  --popover-foreground: 0 0% 98%;
+  --card: 240 10% 3.9%;
+  --card-foreground: 0 0% 98%;
+  --border: 240 3.7% 15.9%;
+  --input: 240 3.7% 15.9%;
+  --primary: 207 90% 54%;
+  --primary-foreground: 211 100% 99%;
+  --secondary: 142 71% 45%;
+  --secondary-foreground: 0 0% 98%;
+  --accent: 354 70% 54%;
+  --accent-foreground: 0 0% 98%;
+  --warning: 39 100% 50%;
+  --warning-foreground: 0 0% 98%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 0 0% 98%;
+  --ring: 240 4.9% 83.9%;
+  --radius: 0.5rem;
+
+  /* Dark theme-specific variables */
+  --dark: 240 10% 3.9%;
+  --surface: 240 10% 10%;
+  --light: 0 0% 98%;
+  --chart-1: 207 90% 54%; /* Primary blue */
+  --chart-2: 142 71% 45%; /* Secondary green */
+  --chart-3: 354 70% 54%; /* Accent red */
+  --chart-4: 39 100% 50%; /* Orange */
+  --chart-5: 262 83% 58%; /* Purple */
+
+  /* Sidebar colors */
+  --sidebar-background: var(--surface);
+  --sidebar-foreground: var(--foreground);
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: var(--primary-foreground);
+  --sidebar-accent: var(--accent);
+  --sidebar-accent-foreground: var(--accent-foreground);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--ring);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-dark text-light;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading;
+  }
+
+  pre, code {
+    @apply font-mono;
+  }
+}
+
+@layer components {
+  .node {
+    @apply w-16 h-16 rounded-full bg-surface flex items-center justify-center border-2 border-primary absolute;
+  }
+  
+  .card-hover {
+    @apply bg-dark p-4 rounded-lg border border-gray-800 hover:border-primary transition-colors;
+  }
+  
+  .packet {
+    @apply absolute w-3 h-3 bg-primary rounded-full shadow-md shadow-primary/40;
+  }
+  
+  .malicious-packet {
+    @apply absolute w-3 h-3 bg-accent rounded-full shadow-md shadow-accent/40;
+  }
+  
+  .process {
+    @apply absolute w-5 h-5 bg-secondary bg-opacity-70 rounded-full shadow-md shadow-secondary/40;
+  }
+  
+  .os-component {
+    @apply absolute rounded-lg bg-surface flex items-center justify-center border-2 border-secondary;
+  }
+  
+  .firewall {
+    @apply absolute flex flex-col items-center justify-center;
+  }
+  
+  .firewall-line {
+    @apply w-full h-1.5 bg-secondary shadow-glow-secondary;
+  }
+  
+  .ids {
+    @apply absolute flex items-center justify-center text-warning;
+  }
+  
+  .shadow-glow-primary {
+    @apply shadow-[0_0_10px_rgba(52,152,219,0.5)];
+  }
+  
+  .shadow-glow-secondary {
+    @apply shadow-[0_0_10px_rgba(46,204,113,0.5)];
+  }
+  
+  .shadow-glow-accent {
+    @apply shadow-[0_0_10px_rgba(231,76,60,0.5)];
+  }
+  
+  .shadow-glow-warning {
+    @apply shadow-[0_0_10px_rgba(241,196,15,0.5)];
+  }
+  
+  .pulse {
+    @apply animate-pulse;
+  }
+  
+  .alert-ping {
+    @apply before:absolute before:inset-0 before:rounded-full before:bg-accent before:opacity-70 before:animate-ping;
+  }
+}
+
+.app-container {
+  @apply max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8;
+}
