@@ -1,0 +1,4 @@
+# Cloudflare Pages build settings for Vite
+[build]
+command = "pnpm run build"
+publish = "client/dist"

@@ -1,0 +1,8 @@
+// Cloudflare Pages configuration for a Vite/React SPA
+// https://developers.cloudflare.com/pages/framework-guides/deploy-a-vite-site/
+
+// This file tells Cloudflare Pages to serve index.html for all routes (SPA fallback)
+[[redirects]]
+from = "/*"
+to = "/index.html"
+status = 200

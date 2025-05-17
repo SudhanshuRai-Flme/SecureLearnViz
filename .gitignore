@@ -1,0 +1,8 @@
+# .gitignore for Cloudflare Pages + Vite/React
+node_modules
+client/dist
+client/.next
+client/.cache
+*.log
+.env*
+.DS_Store
