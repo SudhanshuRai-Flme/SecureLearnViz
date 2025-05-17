@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import useAnimation from "@/hooks/useAnimation";
 import {
   Select,
@@ -12,28 +12,177 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function NetworkFundamentals() {
-  const animationContainerRef = useRef<HTMLDivElement>(null);
   const { animateNetworkPacket } = useAnimation();
   const [firewallEnabled, setFirewallEnabled] = useState(true);
   const [idsEnabled, setIdsEnabled] = useState(true);
   const [packetSize, setPacketSize] = useState(50);
   const [selectedProtocol, setSelectedProtocol] = useState("http");
-  
-  // Restart animation when settings change
-  useEffect(() => {
-    if (animationContainerRef.current) {
-      animateNetworkPacket(animationContainerRef.current);
-    }
+  const [flowKey, setFlowKey] = useState(0); // for restarting animation
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [containerWidth, setContainerWidth] = useState(0);
 
-    // Cleanup function
-    return () => {
-      if (animationContainerRef.current) {
-        animationContainerRef.current.innerHTML = '';
+  // Rule Config State
+  const [firewallRules, setFirewallRules] = useState([
+    { id: 1, label: "Block Malicious", enabled: true },
+  ]);
+  const [idsRules, setIdsRules] = useState([
+    { id: 1, label: "Flag Malicious", enabled: true },
+  ]);
+  const [packetType, setPacketType] = useState<'normal' | 'malicious'>('normal');
+
+  // Animation state for node effects
+  const [firewallPulse, setFirewallPulse] = useState(false);
+  const [idsPulse, setIdsPulse] = useState(false);
+  const [serverSkull, setServerSkull] = useState(false);
+  const animationTimeouts = useRef<NodeJS.Timeout[]>([]);
+
+  // Packet flow simulation state
+  const [packets, setPackets] = useState([
+    { id: 1, type: packetType, status: "pending", node: 0 },
+  ]);
+
+  // Helper for restarting animation
+  const restartFlow = useCallback(() => {
+    setFlowKey((k) => k + 1);
+    setPackets([{ id: 1, type: packetType, status: "pending", node: 0 }]);
+  }, [packetType]);
+
+  // Animation steps for each node
+  const flowNodes = [
+    { key: "user", label: "User Device", icon: "ri-computer-line", color: "primary" },
+    { key: "router", label: "Router", icon: "ri-router-line", color: "primary" },
+    { key: "firewall", label: "Firewall", icon: "ri-shield-check-line", color: "secondary" },
+    { key: "ids", label: "IDS/IPS", icon: "ri-radar-line", color: "warning" },
+    { key: "server", label: "Server", icon: "ri-server-line", color: "primary" },
+  ];
+
+  // Path/curve positions for each node (for smooth motion)
+  const [nodePositions, setNodePositions] = useState([
+    { x: 0, y: 0 }, // User
+    { x: 150, y: 0 }, // Router
+    { x: 300, y: 0 }, // Firewall
+    { x: 450, y: 0 }, // IDS/IPS
+    { x: 600, y: 0 }, // Server
+  ]);
+  
+  // Update node positions based on container width
+  useEffect(() => {
+    const updatePositions = () => {
+      if (containerRef.current) {
+        const width = containerRef.current.offsetWidth;
+        setContainerWidth(width);
+        
+        // Calculate node positions based on container width
+        const gap = Math.max(100, (width - 100) / 4);
+        setNodePositions([
+          { x: 10, y: 0 }, // User - slight offset from left edge
+          { x: gap, y: 0 }, // Router
+          { x: gap * 2, y: 0 }, // Firewall
+          { x: gap * 3, y: 0 }, // IDS/IPS
+          { x: width - 50, y: 0 }, // Server - slight offset from right edge
+        ]);
       }
     };
-  }, [firewallEnabled, idsEnabled, packetSize, selectedProtocol]);
+    
+    updatePositions();
+    
+    // Add resize listener
+    window.addEventListener('resize', updatePositions);
+    return () => window.removeEventListener('resize', updatePositions);
+  }, []);
+
+  // Color logic
+  function getPacketColor(packet: { status: string }) {
+    if (packet.status === "allowed") return "bg-green-500/80";
+    if (packet.status === "blocked") return "bg-red-500/80";
+    if (packet.status === "flagged") return "bg-yellow-400/80";
+    return "bg-blue-500/80";
+  }
+
+  // Animate a single packet through the flow
+  useEffect(() => {
+    animationTimeouts.current.forEach(clearTimeout);
+    animationTimeouts.current = [];
+    setFirewallPulse(false);
+    setIdsPulse(false);
+    setServerSkull(false);
+    setPackets((prev) => prev.map((p) => ({ ...p, node: 0, status: "pending" })));
+    const packet = packets[0];
+    let node = 0;
+    let status = "pending";
+    let flagged = false;
+    const isMalicious = packet.type === "malicious";
+    
+    function step() {
+      // Router: always pass
+      if (node === 1) {
+        status = "pending";
+      }
+      
+      // Firewall logic
+      if (node === 2) {
+        // Only block if: firewall is enabled AND rule is enabled AND packet is malicious
+        if (firewallEnabled && firewallRules[0].enabled && isMalicious) {
+          status = "blocked";
+          setFirewallPulse(true);
+          setPackets((prev) => prev.map((p) => ({ ...p, node, status })));
+          animationTimeouts.current.push(setTimeout(() => setFirewallPulse(false), 400));
+          animationTimeouts.current.push(setTimeout(() => restartFlow(), 1200));
+          return;
+        } else {
+          status = "pending";
+        }
+      }
+      
+      // IDS/IPS logic
+      if (node === 3) {
+        // Only flag and potentially block if: IDS is enabled AND rule is enabled AND packet is malicious
+        if (idsEnabled && idsRules[0].enabled && isMalicious) {
+          setIdsPulse(true);
+          status = "flagged";
+          flagged = true;
+          setPackets((prev) => prev.map((p) => ({ ...p, node, status })));
+          animationTimeouts.current.push(setTimeout(() => setIdsPulse(false), 400));
+          
+          // Block malicious packets at IDS/IPS
+          animationTimeouts.current.push(setTimeout(() => {
+            setPackets((prev) => prev.map((p) => ({ ...p, node, status: "blocked" })));
+            animationTimeouts.current.push(setTimeout(() => restartFlow(), 1200));
+          }, 900));
+          return;
+        } else {
+          status = "pending";
+        }
+      }
+      
+      // Server (final node)
+      if (node === 4) {
+        status = flagged ? "flagged" : "allowed";
+        setPackets((prev) => prev.map((p) => ({ ...p, node, status })));
+        
+        // Show skull animation if a malicious packet reaches the server
+        if (isMalicious) {
+          setServerSkull(true);
+          animationTimeouts.current.push(setTimeout(() => setServerSkull(false), 800));
+        }
+        
+        animationTimeouts.current.push(setTimeout(() => restartFlow(), 1200));
+        return;
+      }
+      
+      setPackets((prev) => prev.map((p) => ({ ...p, node, status })));
+      animationTimeouts.current.push(setTimeout(() => {
+        node++;
+        step();
+      }, 700));
+    }
+    
+    animationTimeouts.current.push(setTimeout(step, 300));
+    return () => animationTimeouts.current.forEach(clearTimeout);
+  }, [firewallEnabled, idsEnabled, flowKey, firewallRules, idsRules, packetType, restartFlow]);
 
   return (
     <section className="mb-12">
@@ -65,54 +214,68 @@ export default function NetworkFundamentals() {
           </div>
         </div>
 
-        {/* Network Visualization Canvas */}
-        <div className="bg-dark rounded-lg p-4 mb-6 relative overflow-hidden" style={{ height: "400px" }}>
-          {/* Network Nodes */}
-          <div className="node top-1/4 left-1/4 shadow-glow-primary" data-node="client">
-            <i className="ri-computer-line text-2xl text-primary"></i>
+        {/* Redesigned Packet Flow Visualizer */}
+        <div ref={containerRef} className="bg-dark rounded-lg p-4 mb-6 relative overflow-hidden" style={{ height: 200 }}>
+          {/* Flow Nodes */}
+          <div className="flex justify-between items-center h-24 relative z-10 mt-10" style={{ minWidth: 0 }}>
+            {flowNodes.map((node, idx) => (
+              <div key={node.key} className="flex flex-col items-center flex-1 min-w-0">
+                <motion.div
+                  className={`w-14 h-14 rounded-full border-2 flex items-center justify-center mb-1 bg-dark border-${node.color} shadow-glow-${node.color}
+                    ${node.key === "firewall" && firewallPulse ? "ring-4 ring-red-400/60 animate-pulse" : ""}
+                    ${node.key === "ids" && idsPulse ? "ring-4 ring-yellow-300/60 animate-pulse" : ""}
+                    ${node.key === "server" && serverSkull ? "ring-4 ring-red-500/60 animate-pulse" : ""}`}
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ delay: idx * 0.1 }}
+                >
+                  {node.key === "server" && serverSkull ? (
+                    <i className="ri-skull-fill text-2xl text-red-500 animate-pulse"></i>
+                  ) : (
+                    <i className={`${node.icon} text-2xl text-${node.color}`}></i>
+                  )}
+                </motion.div>
+                <div className={`text-xs font-mono text-${node.color} text-center`}>{node.label}</div>
+              </div>
+            ))}
           </div>
-          
-          <div className="node top-1/4 right-1/4 shadow-glow-primary" data-node="router">
-            <i className="ri-router-line text-2xl text-primary"></i>
-          </div>
-          
-          <div className="node bottom-1/4 right-1/4 shadow-glow-primary" data-node="server">
-            <i className="ri-server-line text-2xl text-primary"></i>
-          </div>
-          
-          <div className="node bottom-1/4 left-1/4 shadow-glow-primary" data-node="database">
-            <i className="ri-database-2-line text-2xl text-primary"></i>
-          </div>
-          
-          {/* Packet Animation Elements */}
-          <div ref={animationContainerRef} id="packet-container"></div>
-          
-          {/* Connection Lines */}
-          <svg className="absolute inset-0 w-full h-full pointer-events-none" id="network-connections">
-            <defs>
-              <linearGradient id="line-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#3498db" stopOpacity="0.6" />
-                <stop offset="100%" stopColor="#3498db" stopOpacity="1" />
-              </linearGradient>
-            </defs>
-            <line x1="25%" y1="25%" x2="75%" y2="25%" stroke="url(#line-gradient)" strokeWidth="2" strokeDasharray="5,5" />
-            <line x1="75%" y1="25%" x2="75%" y2="75%" stroke="url(#line-gradient)" strokeWidth="2" strokeDasharray="5,5" />
-            <line x1="75%" y1="75%" x2="25%" y2="75%" stroke="url(#line-gradient)" strokeWidth="2" strokeDasharray="5,5" />
-            <line x1="25%" y1="75%" x2="25%" y2="25%" stroke="url(#line-gradient)" strokeWidth="2" strokeDasharray="5,5" />
-          </svg>
-          
-          {/* Node Labels */}
-          <div className="absolute text-xs text-primary font-mono top-1/4 left-1/4 transform -translate-x-1/2 -translate-y-8">
-            CLIENT
-          </div>
-          <div className="absolute text-xs text-primary font-mono top-1/4 right-1/4 transform translate-x-1/2 -translate-y-8">
-            ROUTER
-          </div>
-          <div className="absolute text-xs text-primary font-mono bottom-1/4 right-1/4 transform translate-x-1/2 translate-y-8">
-            SERVER
-          </div>
-          <div className="absolute text-xs text-primary font-mono bottom-1/4 left-1/4 transform -translate-x-1/2 translate-y-8">
-            DATABASE
+
+          {/* Animated Packet on motion path */}
+          <AnimatePresence initial={false}>
+            {packets.map((packet) => (
+              <motion.div
+                key={packet.id + '-' + flowKey}
+                initial={{
+                  x: nodePositions[0].x,
+                  y: nodePositions[0].y - 30,
+                  opacity: 0,
+                }}
+                animate={{
+                  x: nodePositions[packet.node].x,
+                  y: nodePositions[packet.node].y - 30,
+                  opacity: 1,
+                  scale: packet.status === "blocked" ? 0.7 : 1,
+                }}
+                exit={{ opacity: 0, scale: 0.5 }}
+                transition={{
+                  duration: 0.7,
+                  type: "spring",
+                  bounce: 0.2,
+                }}
+                className={`absolute w-7 h-7 rounded-full flex items-center justify-center shadow-lg border border-white/10 ${getPacketColor(packet)}`}
+                style={{ zIndex: 30 }}
+              >
+                <i className="ri-arrow-right-line text-lg text-white"></i>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+
+          {/* Legend */}
+          <div className="absolute bottom-2 right-4 bg-dark/80 rounded px-3 py-2 flex items-center space-x-4 text-xs z-30 border border-gray-700">
+            <div className="flex items-center"><div className="w-3 h-3 rounded-full bg-green-500 mr-1"></div>Allowed</div>
+            <div className="flex items-center"><div className="w-3 h-3 rounded-full bg-yellow-400 mr-1"></div>Flagged</div>
+            <div className="flex items-center"><div className="w-3 h-3 rounded-full bg-red-500 mr-1"></div>Blocked</div>
+            <div className="flex items-center"><div className="w-3 h-3 rounded-full bg-blue-500 mr-1"></div>In Transit</div>
           </div>
         </div>
 
@@ -159,23 +322,70 @@ export default function NetworkFundamentals() {
             <div className="flex flex-col space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-sm">Firewall:</span>
-                <span className={`text-xs px-2 py-1 rounded ${firewallEnabled ? 'bg-secondary bg-opacity-20 text-secondary' : 'bg-accent bg-opacity-20 text-accent'}`}>
+                <span className={`text-xs px-2 py-1 rounded font-medium ${firewallEnabled ? 'bg-green-500/20 text-white' : 'bg-accent bg-opacity-20 text-accent'}`}>
                   {firewallEnabled ? 'ACTIVE' : 'DISABLED'}
                 </span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm">IDS/IPS:</span>
-                <span className={`text-xs px-2 py-1 rounded ${idsEnabled ? 'bg-secondary bg-opacity-20 text-secondary' : 'bg-accent bg-opacity-20 text-accent'}`}>
+                <span className={`text-xs px-2 py-1 rounded font-medium ${idsEnabled ? 'bg-green-500/20 text-white' : 'bg-accent bg-opacity-20 text-accent'}`}>
                   {idsEnabled ? 'MONITORING' : 'DISABLED'}
                 </span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm">Encryption:</span>
-                <span className="text-xs px-2 py-1 rounded bg-warning bg-opacity-20 text-warning">
+                <span className="text-xs px-2 py-1 rounded bg-yellow-500/20 text-white font-medium">
                   {selectedProtocol === "http" ? 'TLS 1.3' : 'IPSec'}
                 </span>
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* Rule Configuration */}
+        <div className="flex flex-col md:flex-row gap-4 mb-4">
+          <div className="bg-dark rounded-lg p-4 flex-1">
+            <h3 className="font-semibold mb-2">Firewall Rules</h3>
+            {firewallRules.map(rule => (
+              <label key={rule.id} className="flex items-center space-x-2 mb-2">
+                <input
+                  type="checkbox"
+                  checked={rule.enabled}
+                  onChange={e => setFirewallRules(rules => rules.map(r => r.id === rule.id ? { ...r, enabled: e.target.checked } : r))}
+                />
+                <span className="text-sm">{rule.label}</span>
+              </label>
+            ))}
+          </div>
+          <div className="bg-dark rounded-lg p-4 flex-1">
+            <h3 className="font-semibold mb-2">IDS/IPS Rules</h3>
+            {idsRules.map(rule => (
+              <label key={rule.id} className="flex items-center space-x-2 mb-2">
+                <input
+                  type="checkbox"
+                  checked={rule.enabled}
+                  onChange={e => setIdsRules(rules => rules.map(r => r.id === rule.id ? { ...r, enabled: e.target.checked } : r))}
+                />
+                <span className="text-sm">{rule.label}</span>
+              </label>
+            ))}
+          </div>
+          <div className="bg-dark rounded-lg p-4 flex-1">
+            <h3 className="font-semibold mb-2">Packet Type</h3>
+            <div className="flex items-center space-x-3">
+              <button
+                className={`px-3 py-1 rounded ${packetType === 'normal' ? 'bg-primary text-white' : 'bg-gray-700 text-gray-300'}`}
+                onClick={() => setPacketType('normal')}
+              >Normal</button>
+              <button
+                className={`px-3 py-1 rounded ${packetType === 'malicious' ? 'bg-accent text-white' : 'bg-gray-700 text-gray-300'}`}
+                onClick={() => setPacketType('malicious')}
+              >Malicious</button>
+            </div>
+            <button
+              className="mt-3 px-3 py-1 rounded bg-secondary text-white"
+              onClick={restartFlow}
+            >Send Packet</button>
           </div>
         </div>
 
