@@ -27,10 +27,12 @@ export default function NetworkFundamentals() {
   // Rule Config State
   const [firewallRules, setFirewallRules] = useState([
     { id: 1, label: "Block Malicious", enabled: true },
+    { id: 2, label: "Block By Size", enabled: false },
   ]);
   const [idsRules, setIdsRules] = useState([
     { id: 1, label: "Flag Malicious", enabled: true },
   ]);
+  const [maxAllowedPacketSize, setMaxAllowedPacketSize] = useState(70);
   const [packetType, setPacketType] = useState<'normal' | 'malicious'>('normal');
 
   // Animation state for node effects
@@ -124,8 +126,12 @@ export default function NetworkFundamentals() {
       
       // Firewall logic
       if (node === 2) {
-        // Only block if: firewall is enabled AND rule is enabled AND packet is malicious
-        if (firewallEnabled && firewallRules[0].enabled && isMalicious) {
+        // Check for malicious packets rule
+        const blockMalicious = firewallEnabled && firewallRules[0].enabled && isMalicious;
+        // Check for packet size rule
+        const blockBySize = firewallEnabled && firewallRules[1].enabled && packetSize > maxAllowedPacketSize;
+        
+        if (blockMalicious || blockBySize) {
           status = "blocked";
           setFirewallPulse(true);
           setPackets((prev) => prev.map((p) => ({ ...p, node, status })));
@@ -182,7 +188,7 @@ export default function NetworkFundamentals() {
     
     animationTimeouts.current.push(setTimeout(step, 300));
     return () => animationTimeouts.current.forEach(clearTimeout);
-  }, [firewallEnabled, idsEnabled, flowKey, firewallRules, idsRules, packetType, restartFlow]);
+  }, [firewallEnabled, idsEnabled, flowKey, firewallRules, idsRules, packetType, packetSize, maxAllowedPacketSize, restartFlow]);
 
   return (
     <section className="mb-12">
@@ -347,14 +353,28 @@ export default function NetworkFundamentals() {
           <div className="bg-dark rounded-lg p-4 flex-1">
             <h3 className="font-semibold mb-2">Firewall Rules</h3>
             {firewallRules.map(rule => (
-              <label key={rule.id} className="flex items-center space-x-2 mb-2">
-                <input
-                  type="checkbox"
-                  checked={rule.enabled}
-                  onChange={e => setFirewallRules(rules => rules.map(r => r.id === rule.id ? { ...r, enabled: e.target.checked } : r))}
-                />
-                <span className="text-sm">{rule.label}</span>
-              </label>
+              <div key={rule.id}>
+                <label className="flex items-center space-x-2 mb-2">
+                  <input
+                    type="checkbox"
+                    checked={rule.enabled}
+                    onChange={e => setFirewallRules(rules => rules.map(r => r.id === rule.id ? { ...r, enabled: e.target.checked } : r))}
+                  />
+                  <span className="text-sm">{rule.label}</span>
+                </label>
+                {rule.id === 2 && rule.enabled && (
+                  <div className="ml-5 mb-3">
+                    <div className="text-xs text-gray-400 mb-1">Max Packet Size: {maxAllowedPacketSize} bytes</div>
+                    <Slider 
+                      value={[maxAllowedPacketSize]} 
+                      onValueChange={(values) => setMaxAllowedPacketSize(values[0])} 
+                      max={100} 
+                      step={1} 
+                      className="w-full" 
+                    />
+                  </div>
+                )}
+              </div>
             ))}
           </div>
           <div className="bg-dark rounded-lg p-4 flex-1">
