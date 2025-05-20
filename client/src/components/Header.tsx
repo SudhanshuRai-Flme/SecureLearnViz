@@ -19,9 +19,9 @@ export default function Header({ setActiveTab }: HeaderProps) {
           </div>
           <h1 className="text-2xl font-bold">CyberViz</h1>
         </div>
-        
-        <nav className="hidden md:flex items-center space-x-6">
+          <nav className="hidden md:flex items-center space-x-6">
           <a href="#" onClick={() => window.scrollTo(0, 0)} className="text-light hover:text-primary transition-colors">Home</a>
+          <a href="/about" className="text-light hover:text-primary transition-colors">About</a>
           <a 
             href="#network" 
             onClick={() => {
@@ -61,13 +61,19 @@ export default function Header({ setActiveTab }: HeaderProps) {
             </Button>
           </SheetTrigger>
           <SheetContent side="right" className="bg-surface border-gray-800 w-[250px] sm:w-[300px]">
-            <nav className="flex flex-col gap-2 mt-8">
-              <a 
+            <nav className="flex flex-col gap-2 mt-8">              <a 
                 href="#" 
                 onClick={() => {window.scrollTo(0, 0); setIsOpen(false);}} 
                 className="text-light text-lg hover:text-primary transition-colors py-3 px-2 border-b border-gray-800"
               >
                 Home
+              </a>
+              <a 
+                href="/about" 
+                onClick={() => {setIsOpen(false);}} 
+                className="text-light text-lg hover:text-primary transition-colors py-3 px-2 border-b border-gray-800"
+              >
+                About
               </a>
               <a 
                 href="#network" 

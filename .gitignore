@@ -6,3 +6,4 @@ client/.cache
 *.log
 .env*
 .DS_Store
+server
