@@ -62,7 +62,9 @@ export default function AboutPage() {
 
   return (
     <div className="app-container max-w-screen-xl mx-auto px-4 sm:px-6">
-      <Header setActiveTab={() => {}} />
+      <Header setActiveTab={(tab) => {
+        window.location.href = `https://securelearnviz.pages.dev/#${tab}`;
+      }} />
       
       <motion.div
         className="my-12"
@@ -150,12 +152,10 @@ export default function AboutPage() {
                   repeat: Infinity,
                   repeatType: "reverse"
                 }}
-              />
-              <Button 
+              />              <Button 
                 variant="default" 
-                className="relative"
-                onClick={() => {
-                  window.location.href = "/#network";
+                className="relative"                onClick={() => {
+                  window.location.href = "https://securelearnviz.pages.dev/#network";
                 }}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
