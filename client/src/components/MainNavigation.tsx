@@ -1,8 +1,8 @@
 import { Button } from "@/components/ui/button";
 
 type MainNavigationProps = {
-  activeTab: "network" | "os" | "owasp";
-  setActiveTab: (tab: "network" | "os" | "owasp") => void;
+  activeTab: "network" | "os" | "owasp" | "killchain";
+  setActiveTab: (tab: "network" | "os" | "owasp" | "killchain") => void;
 };
 
 export default function MainNavigation({ activeTab, setActiveTab }: MainNavigationProps) {
@@ -26,6 +26,12 @@ export default function MainNavigation({ activeTab, setActiveTab }: MainNavigati
           onClick={() => setActiveTab("owasp")}
         >
           OWASP Top 10
+        </Button>
+        <Button 
+          className={`${activeTab === "killchain" ? "bg-primary text-light" : "bg-surface hover:bg-gray-800 text-light"} w-full sm:w-auto py-3 sm:py-2`} 
+          onClick={() => setActiveTab("killchain")}
+        >
+          Cyber Kill Chain
         </Button>
       </div>
     </div>

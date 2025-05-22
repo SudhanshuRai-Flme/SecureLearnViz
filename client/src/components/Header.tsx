@@ -4,7 +4,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
 
 interface HeaderProps {
-  setActiveTab: React.Dispatch<React.SetStateAction<"network" | "os" | "owasp">>;
+  setActiveTab: React.Dispatch<React.SetStateAction<"network" | "os" | "owasp" | "killchain">>;
 }
 
 export default function Header({ setActiveTab }: HeaderProps) {
@@ -51,6 +51,16 @@ export default function Header({ setActiveTab }: HeaderProps) {
             className="text-light hover:text-primary transition-colors"
           >
             OWASP
+          </a>
+          <a 
+            href="#killchain" 
+            onClick={() => {
+              setActiveTab("killchain");
+              document.getElementById('killchain')?.scrollIntoView({ behavior: 'smooth' });
+            }} 
+            className="text-light hover:text-primary transition-colors"
+          >
+            Cyber Kill Chain
           </a>
         </nav>
         
@@ -107,6 +117,17 @@ export default function Header({ setActiveTab }: HeaderProps) {
                 className="text-light text-lg hover:text-primary transition-colors py-3 px-2 border-b border-gray-800"
               >
                 OWASP
+              </a>
+              <a 
+                href="#killchain" 
+                onClick={() => {
+                  setActiveTab("killchain");
+                  document.getElementById('killchain')?.scrollIntoView({ behavior: 'smooth' }); 
+                  setIsOpen(false);
+                }} 
+                className="text-light text-lg hover:text-primary transition-colors py-3 px-2 border-b border-gray-800"
+              >
+                Cyber Kill Chain
               </a>
             </nav>
           </SheetContent>

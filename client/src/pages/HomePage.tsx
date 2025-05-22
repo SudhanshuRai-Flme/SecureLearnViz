@@ -12,12 +12,13 @@ import PacketDissector from "@/components/PacketDissector";
 import PageProtectionVisualizer from "@/components/PageProtectionVisualizer";
 import HeapAllocatorVisualizer from "@/components/HeapAllocatorVisualizer";
 import XSSAttackVisualizer from "@/components/XSSAttackVisualizer";
+import CyberKillChainVisualizer from "@/components/CyberKillChainVisualizer";
 import Footer from "@/components/Footer";
 import { useState } from "react";
 import { motion } from "framer-motion";
 
 export default function HomePage() {
-  const [activeTab, setActiveTab] = useState<"network" | "os" | "owasp">("network");
+  const [activeTab, setActiveTab] = useState<"network" | "os" | "owasp" | "killchain">("network");
   
   return (
     <div className="app-container max-w-screen-xl mx-auto px-4 sm:px-6">
@@ -76,6 +77,16 @@ export default function HomePage() {
             <h2 className="text-3xl font-bold mb-6">JWT Visualizer</h2>
             <JWTVisualizer />
           </div>
+        </motion.div>
+      )}
+      {activeTab === "killchain" && (
+        <motion.div
+          id="killchain"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, ease: "easeInOut" }}
+        >
+          <CyberKillChainVisualizer />
         </motion.div>
       )}
       
