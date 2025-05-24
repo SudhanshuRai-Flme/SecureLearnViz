@@ -686,24 +686,17 @@ export default function ClassicCiphers() {
       clearInterval(currentInterval as unknown as number);
     };
   };
-    const nextStep = () => {
+  const nextStep = () => {
     if (animationStep < animationSteps.length - 1) {
       console.log(`Moving to step ${animationStep + 1} of ${animationSteps.length}`);
-      // Use function form to get the latest state
-      setAnimationStep((prevStep: number) => {
-        console.log(`Previous step: ${prevStep}, new step: ${prevStep + 1}`);
-        return prevStep + 1;
-      });
-      
-      // Force update by adding a small delay
-      setTimeout(() => {
-        console.log(`Animation step should now be updated`);
-      }, 0);
+      // Update animation step state directly
+      setAnimationStep(animationStep + 1);
     }
   };
-    const prevStep = () => {
+  const prevStep = () => {
     if (animationStep > 0) {
-      setAnimationStep((prev: number) => prev - 1);
+      // Update animation step state directly
+      setAnimationStep(animationStep - 1);
     }
   };
   
