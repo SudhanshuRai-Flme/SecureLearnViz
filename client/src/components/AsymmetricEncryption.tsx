@@ -3,10 +3,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { motion } from 'framer-motion';
 
-export default function AsymmetricEncryption() {
-  const [animationStep, setAnimationStep] = useState(0);
+export default function AsymmetricEncryption() {  const [animationStep, setAnimationStep] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [animationSpeed, setAnimationSpeed] = useState(1500); // ms per step
+  const [animationInterval, setAnimationInterval] = useState<ReturnType<typeof setTimeout> | null>(null);
   
   // Animation steps
   const steps = [
@@ -18,10 +18,26 @@ export default function AsymmetricEncryption() {
     { title: "Message Received", description: "The original message is recovered" }
   ];
   
+  // Cleanup animation interval when component unmounts
+  useEffect(() => {
+    return () => {
+      if (animationInterval) {
+        clearInterval(animationInterval);
+      }
+    };
+  }, [animationInterval]);
+  
   // Start animation
   const startAnimation = () => {
+    // Clear any existing interval
+    if (animationInterval) {
+      clearInterval(animationInterval);
+    }
+    
     setIsPlaying(true);
-    setAnimationStep(0);
+    
+    // Don't reset animation step to allow continuing from current position
+    // setAnimationStep(0);
     
     const interval = setInterval(() => {
       setAnimationStep(prev => {
@@ -34,8 +50,7 @@ export default function AsymmetricEncryption() {
       });
     }, animationSpeed);
     
-    // Clear interval when component unmounts or when animation stops
-    return () => clearInterval(interval);
+    setAnimationInterval(interval);
   };
   
   const nextStep = () => {
@@ -49,8 +64,11 @@ export default function AsymmetricEncryption() {
       setAnimationStep(prev => prev - 1);
     }
   };
-  
-  const resetAnimation = () => {
+    const resetAnimation = () => {
+    if (animationInterval) {
+      clearInterval(animationInterval);
+      setAnimationInterval(null);
+    }
     setAnimationStep(0);
     setIsPlaying(false);
   };
@@ -229,9 +247,14 @@ export default function AsymmetricEncryption() {
                 >
                   Reset
                 </Button>
-                
-                <Button
-                  onClick={isPlaying ? () => setIsPlaying(false) : startAnimation}
+                  <Button
+                  onClick={isPlaying ? () => {
+                    if (animationInterval) {
+                      clearInterval(animationInterval);
+                      setAnimationInterval(null);
+                    }
+                    setIsPlaying(false);
+                  } : startAnimation}
                   variant={isPlaying ? "destructive" : "default"}
                 >
                   {isPlaying ? "Stop" : "Play Animation"}

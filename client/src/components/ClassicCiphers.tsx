@@ -657,22 +657,45 @@ export default function ClassicCiphers() {
         railFenceDecrypt();
       }
     }, 100); // Small delay to ensure state is reset before creating new animation steps
+  };  // Animation control functions
+  const [animationInterval, setAnimationInterval] = useState<NodeJS.Timeout | null>(null);
+  
+  // Cleanup animation interval when component unmounts
+  useEffect(() => {
+    return () => {
+      if (animationInterval) {
+        clearInterval(animationInterval as unknown as number);
+        setAnimationInterval(null);
+      }
+    };
+  }, [animationInterval]);
+
+  // Properly defined stop animation function
+  const stopAnimation = () => {
+    console.log("Stopping animation");
+    if (animationInterval) {
+      clearInterval(animationInterval as unknown as number);
+      setAnimationInterval(null);
+    }
+    setIsPlaying(false);
   };
-    // Animation control functions
+  
   const startAnimation = () => {
     if (animationSteps.length === 0) return;
     
-    setIsPlaying(true);
+    // Clear any existing interval to prevent multiple intervals running
+    stopAnimation();
     
-    let currentInterval: NodeJS.Timeout;
+    setIsPlaying(true);
     
     // Start animation from current step instead of resetting to 0
     // This allows continuing from where the user left off
-    currentInterval = setInterval(() => {
-      setAnimationStep((prev: number) => {
-        console.log(`Animation playing: step ${prev} → ${prev + 1} of ${animationSteps.length - 1}`);
+    const interval = setInterval(() => {
+      setAnimationStep((prev: number) => {        console.log(`Animation playing: step ${prev} → ${prev + 1} of ${animationSteps.length - 1}`);
         if (prev >= animationSteps.length - 1) {
-          console.log("Animation complete, stopping playback");          clearInterval(currentInterval as unknown as number);
+          console.log("Animation complete, stopping playback");
+          clearInterval(interval as unknown as number);
+          setAnimationInterval(null);
           setIsPlaying(false);
           return prev;
         }
@@ -681,39 +704,49 @@ export default function ClassicCiphers() {
     }, animationSpeed);
     
     // Store the interval ID so we can clear it later
-    return () => {
-      console.log("Clearing animation interval");
-      clearInterval(currentInterval as unknown as number);
-    };
+    setAnimationInterval(interval);
   };
-  const nextStep = () => {
+    const nextStep = () => {
     if (animationStep < animationSteps.length - 1) {
       console.log(`Moving to step ${animationStep + 1} of ${animationSteps.length}`);
-      // Update animation step state directly
-      setAnimationStep(animationStep + 1);
+      // Stop any ongoing animation before changing steps manually
+      if (isPlaying) {
+        stopAnimation();
+      }
+      // Update animation step state directly using a functional update to ensure it uses the latest state
+      setAnimationStep(prevStep => prevStep + 1);
     }
   };
-  const prevStep = () => {
+    const prevStep = () => {
     if (animationStep > 0) {
-      // Update animation step state directly
-      setAnimationStep(animationStep - 1);
+      // Stop any ongoing animation before changing steps manually
+      if (isPlaying) {
+        stopAnimation();
+      }
+      // Update animation step state directly using a functional update to ensure it uses the latest state
+      setAnimationStep(prevStep => prevStep - 1);
     }
   };
   
   const resetAnimation = () => {
+    // Clear any existing interval
+    stopAnimation();
     setAnimationStep(0);
-    setIsPlaying(false);
   };
-  
   // Reset animation when tab changes
   useEffect(() => {
     setAnimationSteps([]);
     setAnimationStep(0);
     setVisualizationRunning(false);
     setIsPlaying(false);
+    // Ensure any ongoing animations are stopped
+    if (animationInterval) {
+      clearInterval(animationInterval as unknown as number);
+      setAnimationInterval(null);
+    }
   }, [activeTab]);
   
-  // Current animation step
+  // Current animation step - with safe fallback
   const currentStep = animationSteps[animationStep] || {};
   
   return (
@@ -828,10 +861,9 @@ export default function ClassicCiphers() {
             {visualizationRunning ? (
               <div className="space-y-4">
                 <div className="h-[320px] bg-gray-800 rounded-lg p-4 relative">
-                  <div className="h-full w-full">
-                    <AnimatePresence mode="wait">
+                  <div className="h-full w-full">                    <AnimatePresence mode="wait">
                       <motion.div
-                        key={animationStep}
+                        key={`animation-step-${animationStep}`}
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
@@ -912,17 +944,16 @@ export default function ClassicCiphers() {
                                     <span className="text-xs mt-1">Result</span>
                                   </motion.div>
                                 </div>
-                                
-                                {currentStep.alphabet && (
+                                  {currentStep.alphabet && typeof currentStep.alphabet === 'string' && (
                                   <div className="mt-4 bg-gray-700/50 p-2 rounded text-xs">
                                     {/* Simplified alphabet display showing just the relevant positions */}
                                     <div className="flex justify-center space-x-4 items-center font-mono">
-                                      <div className="flex flex-col items-center">
-                                        <motion.div
+                                      <div className="flex flex-col items-center"><motion.div
                                           className="w-8 h-8 flex items-center justify-center rounded bg-blue-900/50 border border-blue-500"
                                           animate={{ scale: [1, 1.1, 1] }}
                                           transition={{ duration: 1, repeat: Infinity }}
-                                        >                                          {currentStep.alphabet && currentStep.originalPosition !== undefined ? 
+                                        >                                          {currentStep.alphabet && typeof currentStep.alphabet === 'string' && 
+                                           currentStep.originalPosition !== undefined ? 
                                             currentStep.alphabet[currentStep.originalPosition] : ''}
                                         </motion.div>
                                         <div className="mt-1">Position {(currentStep.originalPosition ?? 0) + 1}</div>
@@ -937,23 +968,22 @@ export default function ClassicCiphers() {
                                         <div className="text-xs mt-1">Shift {currentStep.isDecrypt ? '-' : '+'}{currentStep.currentShift}</div>
                                       </motion.div>
                                       
-                                      <div className="flex flex-col items-center">
-                                        <motion.div
+                                      <div className="flex flex-col items-center">                                        <motion.div
                                           className="w-8 h-8 flex items-center justify-center rounded bg-green-900/50 border border-green-500"
                                           animate={{ scale: [1, 1.1, 1] }}
                                           transition={{ duration: 1, repeat: Infinity, delay: 0.5 }}
-                                        >
-                                          {currentStep.alphabet[currentStep.newPosition]}
+                                        >                                          {currentStep.alphabet && typeof currentStep.alphabet === 'string' && 
+                                           currentStep.newPosition !== undefined ? 
+                                            currentStep.alphabet[currentStep.newPosition] : ''}
                                         </motion.div>
-                                        <div className="mt-1">Position {currentStep.newPosition + 1}</div>
+                                        <div className="mt-1">Position {currentStep.newPosition !== undefined ? currentStep.newPosition + 1 : ''}</div>
                                       </div>
                                     </div>
                                   </div>
                                 )}
                               </div>
                             )}
-                            
-                            {/* Result so far */}
+                              {/* Current result */}
                             {currentStep.currentResult && (
                               <div className="mt-6 w-full">
                                 <div className="grid grid-flow-col auto-cols-max gap-1 justify-center">
@@ -968,9 +998,8 @@ export default function ClassicCiphers() {
                                       {char}
                                     </motion.div>
                                   ))}
-                                </div>
-                                <div className="mt-1 text-center text-xs">
-                                  {currentStep.isDecrypt ? "Decrypted result" : "Encrypted result"} so far
+                                </div>                                <div className="mt-1 text-center text-xs">
+                                  {currentStep.isDecrypt ? "Decrypted result" : "Encrypted result"}
                                 </div>
                               </div>
                             )}
@@ -1100,11 +1129,8 @@ export default function ClassicCiphers() {
                       disabled={isPlaying || animationStep === 0}
                       className="px-3"
                     >
-                      <span className={animationStep === 0 ? "opacity-50" : ""}>↺ Reset</span>
-                    </Button>
-                    
-                    <Button
-                      onClick={isPlaying ? () => setIsPlaying(false) : startAnimation}
+                      <span className={animationStep === 0 ? "opacity-50" : ""}>↺ Reset</span>                    </Button>                      <Button
+                      onClick={isPlaying ? stopAnimation : startAnimation}
                       variant={isPlaying ? "destructive" : "default"}
                       className="min-w-[120px] transition-all"
                     >

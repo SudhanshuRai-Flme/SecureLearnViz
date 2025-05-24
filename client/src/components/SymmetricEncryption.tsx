@@ -112,15 +112,16 @@ export default function SymmetricEncryption() {
       }
     };
   }, [animationInterval]);
-  
-  const startAnimation = () => {
+    const startAnimation = () => {
     // Clear any existing interval
     if (animationInterval) {
       clearInterval(animationInterval);
     }
     
     setIsPlaying(true);
-    setAnimationStep(0);
+    
+    // Don't reset to 0 to allow continuing from where we stopped
+    // setAnimationStep(0);
     
     const interval = setInterval(() => {
       setAnimationStep(prev => {
@@ -135,8 +136,7 @@ export default function SymmetricEncryption() {
     
     setAnimationInterval(interval);
   };
-  
-  const stopAnimation = () => {
+    const stopAnimation = () => {
     if (animationInterval) {
       clearInterval(animationInterval);
       setAnimationInterval(null);
@@ -1028,10 +1028,10 @@ export default function SymmetricEncryption() {
                       <p>Reset Animation</p>
                     </TooltipContent>
                   </Tooltip>
-                </TooltipProvider>
-                        <Button
+                </TooltipProvider>                <Button
                 onClick={isPlaying ? stopAnimation : startAnimation}
                 variant={isPlaying ? "destructive" : "default"}
+                className="flex items-center gap-1"
               >
                 {isPlaying ? (
                   <span className="flex items-center">
