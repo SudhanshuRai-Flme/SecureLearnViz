@@ -18,8 +18,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 
 export default function HomePage() {
-  const [activeTab, setActiveTab] = useState<"network" | "os" | "owasp" | "killchain">("network");
-  
+  const [activeTab, setActiveTab] = useState<"network" | "os" | "owasp" | "killchain" | "crypto">("network");
   return (
     <div className="app-container max-w-screen-xl mx-auto px-4 sm:px-6">
       <Header setActiveTab={setActiveTab} />
@@ -78,8 +77,7 @@ export default function HomePage() {
             <JWTVisualizer />
           </div>
         </motion.div>
-      )}
-      {activeTab === "killchain" && (
+      )}      {activeTab === "killchain" && (
         <motion.div
           id="killchain"
           initial={{ opacity: 0 }}
@@ -87,6 +85,27 @@ export default function HomePage() {
           transition={{ duration: 0.5, ease: "easeInOut" }}
         >
           <CyberKillChainVisualizer />
+        </motion.div>
+      )}
+      
+      {activeTab === "crypto" && (
+        <motion.div
+          id="redirect"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, ease: "easeInOut" }}
+          onAnimationComplete={() => {
+            window.location.href = "/crypto";
+          }}
+        >
+          <div className="flex justify-center items-center py-20">
+            <div className="text-center">
+              <div className="inline-block animate-spin text-primary text-4xl mb-4">
+                <i className="ri-loader-4-line"></i>
+              </div>
+              <p className="text-light">Redirecting to Cryptography Module...</p>
+            </div>
+          </div>
         </motion.div>
       )}
       

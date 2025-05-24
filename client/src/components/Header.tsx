@@ -4,7 +4,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
 
 interface HeaderProps {
-  setActiveTab: React.Dispatch<React.SetStateAction<"network" | "os" | "owasp" | "killchain">>;
+  setActiveTab: React.Dispatch<React.SetStateAction<"network" | "os" | "owasp" | "killchain" | "crypto">>;
 }
 
 export default function Header({ setActiveTab }: HeaderProps) {
@@ -51,8 +51,7 @@ export default function Header({ setActiveTab }: HeaderProps) {
             className="text-light hover:text-primary transition-colors"
           >
             OWASP
-          </a>
-          <a 
+          </a>          <a 
             href="#killchain" 
             onClick={() => {
               setActiveTab("killchain");
@@ -61,6 +60,12 @@ export default function Header({ setActiveTab }: HeaderProps) {
             className="text-light hover:text-primary transition-colors"
           >
             Cyber Kill Chain
+          </a>
+          <a 
+            href="/crypto" 
+            className="text-light hover:text-primary transition-colors"
+          >
+            Crypto
           </a>
         </nav>
         
@@ -117,8 +122,7 @@ export default function Header({ setActiveTab }: HeaderProps) {
                 className="text-light text-lg hover:text-primary transition-colors py-3 px-2 border-b border-gray-800"
               >
                 OWASP
-              </a>
-              <a 
+              </a>              <a 
                 href="#killchain" 
                 onClick={() => {
                   setActiveTab("killchain");
@@ -128,6 +132,15 @@ export default function Header({ setActiveTab }: HeaderProps) {
                 className="text-light text-lg hover:text-primary transition-colors py-3 px-2 border-b border-gray-800"
               >
                 Cyber Kill Chain
+              </a>
+              <a 
+                href="/crypto" 
+                onClick={() => {
+                  setIsOpen(false);
+                }} 
+                className="text-light text-lg hover:text-primary transition-colors py-3 px-2 border-b border-gray-800"
+              >
+                Crypto
               </a>
             </nav>
           </SheetContent>
