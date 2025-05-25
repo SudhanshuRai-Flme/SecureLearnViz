@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import useAnimation from "@/hooks/useAnimation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -58,48 +57,120 @@ export default function OWASPTop10() {
   const [selectedVulnerability, setSelectedVulnerability] = useState<string>("injection");
   const [wafEnabled, setWafEnabled] = useState<boolean>(false);
   const [useSanitizedInput, setUseSanitizedInput] = useState<boolean>(false);
+  const [isAnimating, setIsAnimating] = useState<boolean>(false);
+  const [alertState, setAlertState] = useState<{ show: boolean; isBlocked: boolean; message: string }>({
+    show: false,
+    isBlocked: false,
+    message: ""
+  });
   const attackVectorRef = useRef<HTMLDivElement>(null);
-  const { animateAttackVector } = useAnimation();
+
+  // WAF Detection Patterns
+  const attackPatterns = [
+    // SQL Injection patterns
+    /'.*OR.*'.*='.*'/i,
+    /UNION.*SELECT/i,
+    /DROP.*TABLE/i,
+    /INSERT.*INTO/i,
+    /DELETE.*FROM/i,
+    /UPDATE.*SET/i,
+    /--.*$/,
+    /\/\*.*\*\//,
+    /'.*;\s*(DROP|DELETE|INSERT|UPDATE)/i,
+    
+    // XSS patterns
+    /<script[^>]*>.*<\/script>/i,
+    /javascript:/i,
+    /on\w+\s*=/i,
+    /<iframe/i,
+    /<object/i,
+    /<embed/i,
+    /eval\s*\(/i,
+    /document\.cookie/i,
+    /document\.write/i,
+    
+    // Path traversal
+    /\.\.\//,
+    /\.\.\\\\'/,
+    /\/etc\/passwd/i,
+    /\/windows\/system32/i,
+  ];
+
+  const benignPatterns = [
+    /^[a-zA-Z0-9\s@._-]+$/,  // Basic alphanumeric with common chars
+    /^SELECT\s+\*\s+FROM\s+\w+\s+WHERE\s+\w+\s*=\s*\?$/i,  // Parameterized query
+    /^[^<>'";&|`]+$/,  // No dangerous characters
+  ];
+
+  const evaluatePayloadSecurity = (inputPayload: string): boolean => {
+    // If WAF is disabled, everything passes
+    if (!wafEnabled) return false;
+    
+    // Check against attack patterns
+    for (const pattern of attackPatterns) {
+      if (pattern.test(inputPayload)) {
+        return true; // Blocked
+      }
+    }
+    
+    // If input sanitization is enabled, additional protection
+    if (useSanitizedInput) {
+      return false; // Sanitized inputs pass through
+    }
+    
+    // Check if it matches benign patterns
+    for (const pattern of benignPatterns) {
+      if (pattern.test(inputPayload)) {
+        return false; // Allow benign patterns
+      }
+    }
+    
+    // Default to blocking suspicious patterns
+    return inputPayload.length > 50 || /[<>'";&|`]/.test(inputPayload);
+  };
 
   // Use the custom hook for description
   const vulnerabilityDescription = useOwaspDescription(selectedVulnerability);
 
   useEffect(() => {
     setIsVulnerabilityExploited(false);
-    if (attackVectorRef.current) {
-      animateAttackVector(attackVectorRef.current);
-    }
-    return () => {
-      if (attackVectorRef.current) {
-        attackVectorRef.current.style.opacity = '0';
-      }
-    };
+    setAlertState({ show: false, isBlocked: false, message: "" });
   }, [wafEnabled, useSanitizedInput, selectedVulnerability]);
 
-  const handleTestAttack = () => {
+  const handleTestAttack = async () => {
+    if (isAnimating) return;
+    
+    setIsAnimating(true);
     setIsVulnerabilityExploited(true);
-    if (attackVectorRef.current) {
-      const queryBubble = document.getElementById('query-bubble');
-      if (queryBubble) {
-        queryBubble.classList.remove('hidden');
-      }
-      const injectedQueryElement = document.getElementById('injected-query');
-      if (injectedQueryElement) {
-        injectedQueryElement.textContent = payload;
-      }
-      attackVectorRef.current.style.opacity = '1';
-      if (wafEnabled) {
-        const webFirewall = document.getElementById('web-firewall');
-        if (webFirewall) {
-          webFirewall.classList.add('pulse');
-          setTimeout(() => {
-            if (webFirewall) {
-              webFirewall.classList.remove('pulse');
-            }
-          }, 2000);
-        }
-      }
+    
+    // Evaluate payload security
+    const isBlocked = evaluatePayloadSecurity(payload);
+    
+    // Check if attack is detected (for alert messaging)
+    const isAttackDetected = attackPatterns.some(pattern => pattern.test(payload));
+    
+    // Update alert state based on protection mechanisms
+    let message: string;
+    let alertBlocked: boolean;
+    
+    if (isBlocked) {
+      message = "Packet blocked by WAF";
+      alertBlocked = true;
+    } else if (useSanitizedInput && isAttackDetected) {
+      message = "Attack Prevented (Input Sanitized)";
+      alertBlocked = true; // Show as prevented even though packet passes
+    } else {
+      message = "Packet passed successfully";
+      alertBlocked = false;
     }
+    
+    setAlertState({ show: true, isBlocked: alertBlocked, message });
+    
+    // Hide alert after animation
+    setTimeout(() => {
+      setAlertState(prev => ({ ...prev, show: false }));
+      setIsAnimating(false);
+    }, 3000);
   };
 
   const getSanitizedPayload = () => {
@@ -184,40 +255,56 @@ export default function OWASPTop10() {
 
         {/* Vulnerability Demo */}
         <div className="bg-dark rounded-lg p-6 mb-6">
-          <h3 className="font-semibold mb-4 text-xl">SQL Injection Visualization</h3>
-          <div className="relative mb-6 overflow-hidden rounded-lg border border-gray-800" style={{ height: "260px" }}>
-            {/* Web Application */}
+          <h3 className="font-semibold mb-4 text-xl">WAF Security Simulation</h3>
+          <div className="relative mb-6 overflow-hidden rounded-lg border border-gray-800 w-full" style={{ height: "260px" }}>
+            {/* Client */}
             <div 
-              className="absolute top-1/2 left-1/4 transform -translate-x-1/2 -translate-y-1/2 w-32 h-24 bg-surface rounded-lg flex items-center justify-center border border-primary" 
-              data-component="web-app"
+              className="absolute top-1/2 left-8 sm:left-12 md:left-16 transform -translate-y-1/2 w-20 h-16 sm:w-24 sm:h-20 md:w-28 md:h-24 bg-surface rounded-lg flex items-center justify-center border border-primary" 
+              data-component="client"
             >
               <div className="text-center">
-                <i className="ri-pages-line text-xl text-primary"></i>
-                <div className="text-xs mt-1 text-gray-400">Web App</div>
+                <i className="ri-computer-line text-lg sm:text-xl text-primary"></i>
+                <div className="text-xs mt-1 text-gray-400">Client</div>
               </div>
             </div>
+
             {/* Web Application Firewall (if enabled) */}
-            {wafEnabled && (
-              <div 
-                id="web-firewall"
-                data-component="web-firewall"
-                className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-4 h-28 flex flex-col items-center justify-center"
-              >
-                <div className="text-xs text-secondary mb-1 -rotate-90">WAF</div>
-                <div className="w-1 h-full bg-secondary shadow-glow-secondary"></div>
-              </div>
-            )}
-            {/* Database */}
+            <AnimatePresence>
+              {wafEnabled && (
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ 
+                    opacity: 1, 
+                    scale: 1,
+                    boxShadow: alertState.show 
+                      ? (alertState.isBlocked 
+                        ? "0 0 20px rgba(239, 68, 68, 0.6)" 
+                        : "0 0 20px rgba(34, 197, 94, 0.6)")
+                      : "0 0 10px rgba(34, 197, 94, 0.3)"
+                  }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  transition={{ duration: 0.3 }}
+                  className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-20 sm:w-20 sm:h-24 md:w-24 md:h-28 bg-secondary/20 rounded-lg flex flex-col items-center justify-center border-2 border-secondary"
+                  data-component="waf"
+                >
+                  <i className="ri-shield-check-line text-lg sm:text-xl md:text-2xl text-secondary"></i>
+                  <div className="text-xs mt-1 text-secondary font-medium">WAF</div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Server */}
             <div 
-              className="absolute top-1/2 right-1/4 transform translate-x-1/2 -translate-y-1/2 w-32 h-24 bg-surface rounded-lg flex items-center justify-center border border-primary"
-              data-component="database"
+              className="absolute top-1/2 right-8 sm:right-12 md:right-16 transform translate-x-0 -translate-y-1/2 w-20 h-16 sm:w-24 sm:h-20 md:w-28 md:h-24 bg-surface rounded-lg flex items-center justify-center border border-primary"
+              data-component="server"
             >
               <div className="text-center">
-                <i className="ri-database-2-line text-xl text-primary"></i>
-                <div className="text-xs mt-1 text-gray-400">Database</div>
+                <i className="ri-server-line text-lg sm:text-xl text-primary"></i>
+                <div className="text-xs mt-1 text-gray-400">Server</div>
               </div>
             </div>
-            {/* Connection Line */}
+
+            {/* Connection Lines */}
             <svg className="absolute inset-0 w-full h-full pointer-events-none">
               <defs>
                 <linearGradient id="connection-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -225,23 +312,98 @@ export default function OWASPTop10() {
                   <stop offset="100%" stopColor="#3498db" stopOpacity="1" />
                 </linearGradient>
               </defs>
-              <line x1="30%" y1="50%" x2="70%" y2="50%" stroke="url(#connection-gradient)" strokeWidth="2" />
+              {wafEnabled ? (
+                <>
+                  <line x1="8%" y1="50%" x2="45%" y2="50%" stroke="url(#connection-gradient)" strokeWidth="2" />
+                  <line x1="55%" y1="50%" x2="92%" y2="50%" stroke="url(#connection-gradient)" strokeWidth="2" />
+                </>
+              ) : (
+                <line x1="8%" y1="50%" x2="92%" y2="50%" stroke="url(#connection-gradient)" strokeWidth="2" />
+              )}
             </svg>
-            {/* Attack Vector Animation */}
-            <div 
-              ref={attackVectorRef} 
-              id="attack-vector" 
-              className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-accent text-3xl opacity-0"
-            >
-              <i className="ri-bug-line"></i>
-            </div>
-            {/* Query Bubble */}
-            <div id="query-bubble" className="absolute top-3/4 left-1/2 transform -translate-x-1/2 bg-surface p-2 rounded font-mono text-xs border border-gray-700 hidden shadow-glow-primary">
-              <span className="text-gray-400">SELECT * FROM users WHERE username = '</span>
-              <span className="text-accent" id="injected-query">{useSanitizedInput ? getSanitizedPayload() : payload}</span>
-              <span className="text-gray-400">' AND password = 'password'</span>
-            </div>
+
+            {/* Animated Payload Packet */}
+            <AnimatePresence>
+              {isAnimating && (
+                <motion.div
+                  initial={{ 
+                    left: "8%",
+                    top: "50%",
+                    scale: 0.8, 
+                    opacity: 0 
+                  }}
+                  animate={{
+                    left: wafEnabled ? 
+                      (evaluatePayloadSecurity(payload) ? "50%" : "92%") : 
+                      "92%",
+                    opacity: evaluatePayloadSecurity(payload) && wafEnabled ? 
+                      [0, 1, 1, 0.3, 0] : 
+                      [0, 1, 1, 1],
+                    scale: evaluatePayloadSecurity(payload) && wafEnabled ? 
+                      [0.8, 1, 1.2, 0.8, 0] : 
+                      [0.8, 1, 1],
+                    backgroundColor: evaluatePayloadSecurity(payload) && wafEnabled ? 
+                      ["#3498db", "#3498db", "#ef4444", "#ef4444", "#ef4444"] : 
+                      ["#3498db", "#3498db", "#22c55e"]
+                  }}
+                  transition={{
+                    duration: wafEnabled ? 
+                      (evaluatePayloadSecurity(payload) ? 2.5 : 3.0) : 
+                      2.5,
+                    ease: "easeInOut",
+                    times: evaluatePayloadSecurity(payload) && wafEnabled ? 
+                      [0, 0.3, 0.6, 0.8, 1] : 
+                      [0, 0.4, 1]
+                  }}
+                  className="absolute w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 rounded-full transform -translate-x-1/2 -translate-y-1/2 shadow-lg border-2 border-white/20"
+                  style={{
+                    boxShadow: "0 0 15px currentColor, inset 0 0 10px rgba(255,255,255,0.2)"
+                  }}
+                >
+                  {/* Inner dot for better visibility */}
+                  <div className="w-full h-full rounded-full bg-current opacity-80"></div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Query Display Bubble */}
+            <AnimatePresence>
+              {isVulnerabilityExploited && (
+                <motion.div 
+                  initial={{ opacity: 0, y: 20, scale: 0.9 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -20, scale: 0.9 }}
+                  transition={{ duration: 0.3, delay: 0.5 }}
+                  className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-surface p-2 sm:p-3 rounded-lg font-mono text-xs border border-gray-700 shadow-lg max-w-[90%]"
+                >
+                  <div className="text-gray-400">Payload:</div>
+                  <div className="text-accent text-xs sm:text-sm break-all">
+                    {useSanitizedInput ? getSanitizedPayload() : payload}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
+
+          {/* Dynamic Alert Banner */}
+          <AnimatePresence>
+            {alertState.show && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3 }}
+                className={`w-full px-4 py-2 rounded-lg mb-4 flex items-center justify-center ${
+                  alertState.isBlocked 
+                    ? 'bg-red-600 text-white' 
+                    : 'bg-green-600 text-white'
+                }`}
+              >
+                <i className={`${alertState.isBlocked ? 'ri-shield-cross-line' : 'ri-shield-check-line'} mr-2`}></i>
+                <span className="font-medium">{alertState.message}</span>
+              </motion.div>
+            )}
+          </AnimatePresence>
           {/* Payload Input */}
           <div className="mb-4">
             <div className="flex justify-between items-center mb-2">
