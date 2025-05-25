@@ -10,9 +10,11 @@ export default function MainNavigation({ activeTab, setActiveTab }: MainNavigati
   const [location] = useLocation();
   
   const handleTabClick = (tab: "network" | "os" | "owasp" | "killchain" | "crypto", hash: string) => {
-    if (location === "/") {
-      // On home page - use state management and scroll
-      setActiveTab(tab);
+    // Always delegate to setActiveTab - it knows how to handle each case
+    setActiveTab(tab);
+    
+    // Only handle scrolling if we're on the home page and it's not crypto
+    if (location === "/" && tab !== "crypto") {
       window.history.pushState(null, "", `/#${hash}`);
       setTimeout(() => {
         const element = document.getElementById(hash);
@@ -20,9 +22,6 @@ export default function MainNavigation({ activeTab, setActiveTab }: MainNavigati
           element.scrollIntoView({ behavior: 'smooth' });
         }
       }, 100);
-    } else {
-      // On other pages - delegate to setActiveTab (which should handle navigation)
-      setActiveTab(tab);
     }
   };
 

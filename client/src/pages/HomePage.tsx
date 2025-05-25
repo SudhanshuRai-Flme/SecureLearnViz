@@ -24,10 +24,9 @@ export default function HomePage() {
 
   // Handle tab changes including crypto navigation
   const handleTabChange = (tab: "network" | "os" | "owasp" | "killchain" | "crypto") => {
+    setActiveTab(tab); // Always update the active tab state first
     if (tab === "crypto") {
       setLocation("/crypto");
-    } else {
-      setActiveTab(tab);
     }
   };
 
