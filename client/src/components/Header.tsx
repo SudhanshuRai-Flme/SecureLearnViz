@@ -2,9 +2,10 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
+import { Link } from "wouter";
 
 interface HeaderProps {
-  setActiveTab: React.Dispatch<React.SetStateAction<"network" | "os" | "owasp" | "killchain" | "crypto">>;
+  setActiveTab?: React.Dispatch<React.SetStateAction<"network" | "os" | "owasp" | "killchain" | "crypto">>;
 }
 
 export default function Header({ setActiveTab }: HeaderProps) {
@@ -19,54 +20,40 @@ export default function Header({ setActiveTab }: HeaderProps) {
           </div>
           <h1 className="text-2xl font-bold">CyberViz</h1>
         </div>
-          <nav className="hidden md:flex items-center space-x-6">
-          <a href="#" onClick={() => window.scrollTo(0, 0)} className="text-light hover:text-primary transition-colors">Home</a>
-          <a href="/about" className="text-light hover:text-primary transition-colors">About</a>
-          <a 
-            href="#network" 
-            onClick={() => {
-              setActiveTab("network");
-              document.getElementById('network')?.scrollIntoView({ behavior: 'smooth' });
-            }} 
+        
+        <nav className="hidden md:flex items-center space-x-6">
+          <Link href="/" className="text-light hover:text-primary transition-colors">Home</Link>
+          <Link href="/about" className="text-light hover:text-primary transition-colors">About</Link>
+          <Link 
+            href="/#network-fundamentals" 
             className="text-light hover:text-primary transition-colors"
           >
             Network
-          </a>
-          <a 
-            href="#os" 
-            onClick={() => {
-              setActiveTab("os");
-              document.getElementById('os')?.scrollIntoView({ behavior: 'smooth' });
-            }} 
+          </Link>
+          <Link 
+            href="/#os-fundamentals" 
             className="text-light hover:text-primary transition-colors"
           >
             OS Security
-          </a>
-          <a 
-            href="#owasp" 
-            onClick={() => {
-              setActiveTab("owasp");
-              document.getElementById('owasp')?.scrollIntoView({ behavior: 'smooth' });
-            }} 
+          </Link>
+          <Link 
+            href="/#owasp-top-10" 
             className="text-light hover:text-primary transition-colors"
           >
             OWASP
-          </a>          <a 
-            href="#killchain" 
-            onClick={() => {
-              setActiveTab("killchain");
-              document.getElementById('killchain')?.scrollIntoView({ behavior: 'smooth' });
-            }} 
+          </Link>
+          <Link 
+            href="/#killchain" 
             className="text-light hover:text-primary transition-colors"
           >
             Cyber Kill Chain
-          </a>
-          <a 
+          </Link>
+          <Link 
             href="/crypto" 
             className="text-light hover:text-primary transition-colors"
           >
             Crypto
-          </a>
+          </Link>
         </nav>
         
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
@@ -76,72 +63,56 @@ export default function Header({ setActiveTab }: HeaderProps) {
             </Button>
           </SheetTrigger>
           <SheetContent side="right" className="bg-surface border-gray-800 w-[250px] sm:w-[300px]">
-            <nav className="flex flex-col gap-2 mt-8">              <a 
-                href="#" 
-                onClick={() => {window.scrollTo(0, 0); setIsOpen(false);}} 
+            <nav className="flex flex-col gap-2 mt-8">
+              <Link 
+                href="/" 
+                onClick={() => setIsOpen(false)} 
                 className="text-light text-lg hover:text-primary transition-colors py-3 px-2 border-b border-gray-800"
               >
                 Home
-              </a>
-              <a 
+              </Link>
+              <Link 
                 href="/about" 
-                onClick={() => {setIsOpen(false);}} 
+                onClick={() => setIsOpen(false)} 
                 className="text-light text-lg hover:text-primary transition-colors py-3 px-2 border-b border-gray-800"
               >
                 About
-              </a>
-              <a 
-                href="#network" 
-                onClick={() => {
-                  setActiveTab("network");
-                  document.getElementById('network')?.scrollIntoView({ behavior: 'smooth' }); 
-                  setIsOpen(false);
-                }} 
+              </Link>
+              <Link 
+                href="/#network-fundamentals" 
+                onClick={() => setIsOpen(false)} 
                 className="text-light text-lg hover:text-primary transition-colors py-3 px-2 border-b border-gray-800"
               >
                 Network
-              </a>
-              <a 
-                href="#os" 
-                onClick={() => {
-                  setActiveTab("os");
-                  document.getElementById('os')?.scrollIntoView({ behavior: 'smooth' }); 
-                  setIsOpen(false);
-                }} 
+              </Link>
+              <Link 
+                href="/#os-fundamentals" 
+                onClick={() => setIsOpen(false)} 
                 className="text-light text-lg hover:text-primary transition-colors py-3 px-2 border-b border-gray-800"
               >
                 OS Security
-              </a>
-              <a 
-                href="#owasp" 
-                onClick={() => {
-                  setActiveTab("owasp");
-                  document.getElementById('owasp')?.scrollIntoView({ behavior: 'smooth' }); 
-                  setIsOpen(false);
-                }} 
+              </Link>
+              <Link 
+                href="/#owasp-top-10" 
+                onClick={() => setIsOpen(false)} 
                 className="text-light text-lg hover:text-primary transition-colors py-3 px-2 border-b border-gray-800"
               >
                 OWASP
-              </a>              <a 
-                href="#killchain" 
-                onClick={() => {
-                  setActiveTab("killchain");
-                  document.getElementById('killchain')?.scrollIntoView({ behavior: 'smooth' }); 
-                  setIsOpen(false);
-                }} 
+              </Link>
+              <Link 
+                href="/#killchain" 
+                onClick={() => setIsOpen(false)} 
                 className="text-light text-lg hover:text-primary transition-colors py-3 px-2 border-b border-gray-800"
               >
                 Cyber Kill Chain
-              </a>
-              <a 
+              </Link>
+              <Link 
                 href="/crypto" 
-                onClick={() => {
-                  setIsOpen(false);
-                }} 
+                onClick={() => setIsOpen(false)} 
                 className="text-light text-lg hover:text-primary transition-colors py-3 px-2 border-b border-gray-800"
               >
                 Crypto
-              </a>
+              </Link>
             </nav>
           </SheetContent>
         </Sheet>

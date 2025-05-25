@@ -62,9 +62,7 @@ export default function AboutPage() {
 
   return (
     <div className="app-container max-w-screen-xl mx-auto px-4 sm:px-6">
-      <Header setActiveTab={(tab) => {
-        window.location.href = `https://securelearnviz.pages.dev/#${tab}`;
-      }} />
+      <Header />
       
       <motion.div
         className="my-12"

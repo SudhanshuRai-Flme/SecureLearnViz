@@ -9,17 +9,9 @@ import SymmetricEncryption from '@/components/SymmetricEncryption';
 import AsymmetricEncryption from '@/components/AsymmetricEncryption';
 
 export default function CryptoPage() {
-  // Create a dummy setActiveTab function that meets the type requirements
-  const setActiveTab = (tab: "network" | "os" | "owasp" | "killchain" | "crypto") => {
-    // Special handling for non-crypto tabs - redirect to home page
-    if (tab !== "crypto") {
-      window.location.href = "/#" + tab;
-    }
-  };
-  
   return (
     <div className="app-container max-w-screen-xl mx-auto px-4 sm:px-6">
-      <Header setActiveTab={setActiveTab} />
+      <Header />
       
       <section className="py-8 sm:py-12">
         <div className="flex flex-col items-center text-center">
@@ -32,7 +24,7 @@ export default function CryptoPage() {
         </div>
       </section>
       
-      <MainNavigation activeTab="crypto" setActiveTab={setActiveTab} />
+      <MainNavigation activeTab="crypto" />
       
       <motion.div
         initial={{ opacity: 0 }}
