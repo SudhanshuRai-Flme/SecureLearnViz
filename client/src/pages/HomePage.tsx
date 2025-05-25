@@ -16,9 +16,20 @@ import CyberKillChainVisualizer from "@/components/CyberKillChainVisualizer";
 import Footer from "@/components/Footer";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { useLocation } from "wouter";
 
 export default function HomePage() {
   const [activeTab, setActiveTab] = useState<"network" | "os" | "owasp" | "killchain" | "crypto">("network");
+  const [, setLocation] = useLocation();
+
+  // Handle tab changes including crypto navigation
+  const handleTabChange = (tab: "network" | "os" | "owasp" | "killchain" | "crypto") => {
+    if (tab === "crypto") {
+      setLocation("/crypto");
+    } else {
+      setActiveTab(tab);
+    }
+  };
 
   // Hash navigation effect
   useEffect(() => {
@@ -53,9 +64,9 @@ export default function HomePage() {
 
   return (
     <div className="app-container max-w-screen-xl mx-auto px-4 sm:px-6">
-      <Header setActiveTab={setActiveTab} />
+      <Header setActiveTab={handleTabChange} />
       <Hero />
-      <MainNavigation activeTab={activeTab} setActiveTab={setActiveTab} />
+      <MainNavigation activeTab={activeTab} setActiveTab={handleTabChange} />
       
       {activeTab === "network" && (
         <motion.div
@@ -123,27 +134,6 @@ export default function HomePage() {
           transition={{ duration: 0.5, ease: "easeInOut" }}
         >
           <CyberKillChainVisualizer />
-        </motion.div>
-      )}
-      
-      {activeTab === "crypto" && (
-        <motion.div
-          id="redirect"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, ease: "easeInOut" }}
-          onAnimationComplete={() => {
-            window.location.href = "/crypto";
-          }}
-        >
-          <div className="flex justify-center items-center py-20">
-            <div className="text-center">
-              <div className="inline-block animate-spin text-primary text-4xl mb-4">
-                <i className="ri-loader-4-line"></i>
-              </div>
-              <p className="text-light">Redirecting to Cryptography Module...</p>
-            </div>
-          </div>
         </motion.div>
       )}
       

@@ -7,8 +7,26 @@ import CryptoFundamentals from '@/components/CryptoFundamentals';
 import ClassicCiphers from '@/components/ClassicCiphers';
 import SymmetricEncryption from '@/components/SymmetricEncryption';
 import AsymmetricEncryption from '@/components/AsymmetricEncryption';
+import { useLocation } from 'wouter';
 
 export default function CryptoPage() {
+  const [, setLocation] = useLocation();
+  
+  const handleTabChange = (tab: "network" | "os" | "owasp" | "killchain" | "crypto") => {
+    if (tab === "crypto") {
+      // Already on crypto page, do nothing
+      return;
+    }
+    // Navigate to home page with the appropriate hash
+    const hashMap = {
+      "network": "network-fundamentals",
+      "os": "os-fundamentals", 
+      "owasp": "owasp-top-10",
+      "killchain": "killchain"
+    };
+    setLocation(`/#${hashMap[tab]}`);
+  };
+
   return (
     <div className="app-container max-w-screen-xl mx-auto px-4 sm:px-6">
       <Header />
@@ -24,7 +42,7 @@ export default function CryptoPage() {
         </div>
       </section>
       
-      <MainNavigation activeTab="crypto" />
+      <MainNavigation activeTab="crypto" setActiveTab={handleTabChange} />
       
       <motion.div
         initial={{ opacity: 0 }}
