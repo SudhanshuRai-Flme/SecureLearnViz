@@ -2,14 +2,34 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 
 interface HeaderProps {
-  setActiveTab?: React.Dispatch<React.SetStateAction<"network" | "os" | "owasp" | "killchain" | "crypto">>;
+  setActiveTab?: (tab: "network" | "os" | "owasp" | "killchain" | "crypto") => void;
 }
 
 export default function Header({ setActiveTab }: HeaderProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [location] = useLocation();
+  
+  const handleSectionClick = (tab: "network" | "os" | "owasp" | "killchain" | "crypto", hash: string) => {
+    // If we're already on the home page, handle the navigation
+    if (location === "/" && setActiveTab) {
+      setActiveTab(tab);
+      window.history.pushState(null, "", `/#${hash}`);
+      setTimeout(() => {
+        const element = document.getElementById(hash);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 100);
+    }
+  };
+  
+  const handleMobileSectionClick = (tab: "network" | "os" | "owasp" | "killchain" | "crypto", hash: string) => {
+    setIsOpen(false);
+    handleSectionClick(tab, hash);
+  };
   
   return (
     <header className="py-4 sm:py-6">
@@ -24,30 +44,61 @@ export default function Header({ setActiveTab }: HeaderProps) {
         <nav className="hidden md:flex items-center space-x-6">
           <Link href="/" className="text-light hover:text-primary transition-colors">Home</Link>
           <Link href="/about" className="text-light hover:text-primary transition-colors">About</Link>
-          <Link 
-            href="/#network-fundamentals" 
-            className="text-light hover:text-primary transition-colors"
-          >
-            Network
-          </Link>
-          <Link 
-            href="/#os-fundamentals" 
-            className="text-light hover:text-primary transition-colors"
-          >
-            OS Security
-          </Link>
-          <Link 
-            href="/#owasp-top-10" 
-            className="text-light hover:text-primary transition-colors"
-          >
-            OWASP
-          </Link>
-          <Link 
-            href="/#killchain" 
-            className="text-light hover:text-primary transition-colors"
-          >
-            Cyber Kill Chain
-          </Link>
+          {location === "/" ? (
+            <>
+              <button 
+                onClick={() => handleSectionClick("network", "network-fundamentals")}
+                className="text-light hover:text-primary transition-colors"
+              >
+                Network
+              </button>
+              <button 
+                onClick={() => handleSectionClick("os", "os-fundamentals")}
+                className="text-light hover:text-primary transition-colors"
+              >
+                OS Security
+              </button>
+              <button 
+                onClick={() => handleSectionClick("owasp", "owasp-top-10")}
+                className="text-light hover:text-primary transition-colors"
+              >
+                OWASP
+              </button>
+              <button 
+                onClick={() => handleSectionClick("killchain", "killchain")}
+                className="text-light hover:text-primary transition-colors"
+              >
+                Cyber Kill Chain
+              </button>
+            </>
+          ) : (
+            <>
+              <Link 
+                href="/#network-fundamentals" 
+                className="text-light hover:text-primary transition-colors"
+              >
+                Network
+              </Link>
+              <Link 
+                href="/#os-fundamentals" 
+                className="text-light hover:text-primary transition-colors"
+              >
+                OS Security
+              </Link>
+              <Link 
+                href="/#owasp-top-10" 
+                className="text-light hover:text-primary transition-colors"
+              >
+                OWASP
+              </Link>
+              <Link 
+                href="/#killchain" 
+                className="text-light hover:text-primary transition-colors"
+              >
+                Cyber Kill Chain
+              </Link>
+            </>
+          )}
           <Link 
             href="/crypto" 
             className="text-light hover:text-primary transition-colors"
@@ -78,34 +129,65 @@ export default function Header({ setActiveTab }: HeaderProps) {
               >
                 About
               </Link>
-              <Link 
-                href="/#network-fundamentals" 
-                onClick={() => setIsOpen(false)} 
-                className="text-light text-lg hover:text-primary transition-colors py-3 px-2 border-b border-gray-800"
-              >
-                Network
-              </Link>
-              <Link 
-                href="/#os-fundamentals" 
-                onClick={() => setIsOpen(false)} 
-                className="text-light text-lg hover:text-primary transition-colors py-3 px-2 border-b border-gray-800"
-              >
-                OS Security
-              </Link>
-              <Link 
-                href="/#owasp-top-10" 
-                onClick={() => setIsOpen(false)} 
-                className="text-light text-lg hover:text-primary transition-colors py-3 px-2 border-b border-gray-800"
-              >
-                OWASP
-              </Link>
-              <Link 
-                href="/#killchain" 
-                onClick={() => setIsOpen(false)} 
-                className="text-light text-lg hover:text-primary transition-colors py-3 px-2 border-b border-gray-800"
-              >
-                Cyber Kill Chain
-              </Link>
+              {location === "/" ? (
+                <>
+                  <button 
+                    onClick={() => handleMobileSectionClick("network", "network-fundamentals")}
+                    className="text-light text-lg hover:text-primary transition-colors py-3 px-2 border-b border-gray-800 text-left"
+                  >
+                    Network
+                  </button>
+                  <button 
+                    onClick={() => handleMobileSectionClick("os", "os-fundamentals")}
+                    className="text-light text-lg hover:text-primary transition-colors py-3 px-2 border-b border-gray-800 text-left"
+                  >
+                    OS Security
+                  </button>
+                  <button 
+                    onClick={() => handleMobileSectionClick("owasp", "owasp-top-10")}
+                    className="text-light text-lg hover:text-primary transition-colors py-3 px-2 border-b border-gray-800 text-left"
+                  >
+                    OWASP
+                  </button>
+                  <button 
+                    onClick={() => handleMobileSectionClick("killchain", "killchain")}
+                    className="text-light text-lg hover:text-primary transition-colors py-3 px-2 border-b border-gray-800 text-left"
+                  >
+                    Cyber Kill Chain
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link 
+                    href="/#network-fundamentals" 
+                    onClick={() => setIsOpen(false)} 
+                    className="text-light text-lg hover:text-primary transition-colors py-3 px-2 border-b border-gray-800"
+                  >
+                    Network
+                  </Link>
+                  <Link 
+                    href="/#os-fundamentals" 
+                    onClick={() => setIsOpen(false)} 
+                    className="text-light text-lg hover:text-primary transition-colors py-3 px-2 border-b border-gray-800"
+                  >
+                    OS Security
+                  </Link>
+                  <Link 
+                    href="/#owasp-top-10" 
+                    onClick={() => setIsOpen(false)} 
+                    className="text-light text-lg hover:text-primary transition-colors py-3 px-2 border-b border-gray-800"
+                  >
+                    OWASP
+                  </Link>
+                  <Link 
+                    href="/#killchain" 
+                    onClick={() => setIsOpen(false)} 
+                    className="text-light text-lg hover:text-primary transition-colors py-3 px-2 border-b border-gray-800"
+                  >
+                    Cyber Kill Chain
+                  </Link>
+                </>
+              )}
               <Link 
                 href="/crypto" 
                 onClick={() => setIsOpen(false)} 
