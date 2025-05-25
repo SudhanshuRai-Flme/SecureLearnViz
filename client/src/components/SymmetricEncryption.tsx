@@ -11,10 +11,9 @@ import {
 } from "@/components/ui/tooltip";
 
 export default function SymmetricEncryption() {
-  const [activeAlgorithm, setActiveAlgorithm] = useState('aes');
-  const [animationStep, setAnimationStep] = useState(0);
+  const [activeAlgorithm, setActiveAlgorithm] = useState('aes');  const [animationStep, setAnimationStep] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [animationSpeed, setAnimationSpeed] = useState(1000); // ms per step
+  const [animationSpeed, setAnimationSpeed] = useState(1800); // ms per step - slowed down for better readability
   const [animationInterval, setAnimationInterval] = useState<ReturnType<typeof setTimeout> | null>(null);
   
   // AES animation steps
@@ -89,14 +88,13 @@ export default function SymmetricEncryption() {
       transition: { duration: 0.3 }
     },
     transforming: {
-      backgroundColor: "rgba(4, 120, 87, 0.5)",
-      scale: [1, 1.15, 1],
-      transition: { duration: 0.5 }
+      backgroundColor: "rgba(4, 120, 87, 0.5)",      scale: [1, 1.15, 1],
+      transition: { duration: 0.8 }
     },
     transformed: {
       backgroundColor: "rgba(79, 70, 229, 0.2)",
       borderColor: "rgba(79, 70, 229, 0.5)",
-      transition: { duration: 0.3 }
+      transition: { duration: 0.5 }
     }
   };
 
@@ -731,11 +729,11 @@ export default function SymmetricEncryption() {
                 </motion.span>
               </div>
               
-              {/* F-function internal components */}              <motion.div
-                className="absolute left-4 top-4 right-4 bottom-4 grid grid-cols-4 grid-rows-1 gap-1"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: animationStep >= 2 ? 1 : 0 }}
-                transition={{ delay: 0.3 }}
+              {/* F-function internal components */}                  <motion.div 
+                    className="absolute left-4 top-4 right-4 bottom-4 grid grid-cols-4 grid-rows-1 gap-1"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: animationStep >= 2 ? 1 : 0 }}
+                    transition={{ delay: 0.6 }}
               >
                 {sBoxes.map(box => (
                   <TooltipProvider key={box.id}>
@@ -743,12 +741,11 @@ export default function SymmetricEncryption() {
                       <TooltipTrigger asChild>
                         <motion.div 
                           className="bg-gray-900/50 rounded border border-gray-600 flex items-center justify-center"
-                          whileHover={{ scale: 1.1, borderColor: "rgba(99, 102, 241, 1)" }}
-                          animate={box.active ? {
+                          whileHover={{ scale: 1.1, borderColor: "rgba(99, 102, 241, 1)" }}                          animate={box.active ? {
                             borderColor: ["rgba(99, 102, 241, 0.3)", "rgba(99, 102, 241, 1)", "rgba(99, 102, 241, 0.3)"],
                             backgroundColor: ["rgba(17, 24, 39, 0.5)", "rgba(30, 58, 138, 0.2)", "rgba(17, 24, 39, 0.5)"]
                           } : {}}
-                          transition={{ duration: 2, repeat: Infinity }}
+                          transition={{ duration: 3.5, repeat: Infinity }}
                         >
                           <motion.span 
                             className="font-mono text-xs"
@@ -779,18 +776,17 @@ export default function SymmetricEncryption() {
                           animate="animate"
                           exit={{ opacity: 0, scale: 0 }}
                         >
-                          <div className="w-12 h-12 rounded-full bg-yellow-500/20 flex items-center justify-center">
-                            <motion.span 
-                              className="font-mono text-base text-yellow-300"
-                              animate={{ 
-                                rotate: [0, 180, 360],
-                                scale: [1, 1.2, 1]
-                              }}
-                              transition={{
-                                duration: 2.5,
-                                repeat: Infinity,
-                                ease: "easeInOut"
-                              }}
+                          <div className="w-12 h-12 rounded-full bg-yellow-500/20 flex items-center justify-center">                                  <motion.span 
+                                    className="font-mono text-base text-yellow-300"
+                                    animate={{ 
+                                      rotate: [0, 180, 360],
+                                      scale: [1, 1.2, 1]
+                                    }}
+                                    transition={{
+                                      duration: 3.5,
+                                      repeat: Infinity,
+                                      ease: "easeInOut"
+                                    }}
                             >
                               ⊕
                             </motion.span>
@@ -1194,7 +1190,7 @@ export default function SymmetricEncryption() {
                               <motion.div 
                                 className="mt-1 flex justify-center items-center text-green-400"
                                 animate={{ x: [0, -5, 5, 0] }}
-                                transition={{ repeat: Infinity, duration: 2 }}
+                                transition={{ repeat: Infinity, duration: 3.5 }}
                               >
                                 <svg className="w-4 h-4 mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 7 7 17"/><path d="m7 7 10 10"/></svg>
                                 Row 2 shifts left by 1: F G H E
@@ -1458,7 +1454,7 @@ export default function SymmetricEncryption() {
                                     fill="none"
                                     animate={{ strokeDashoffset: [100, 0] }}
                                     style={{ strokeDasharray: 100 }}
-                                    transition={{ duration: 1, repeat: Infinity, repeatDelay: 3, delay: 0.75 }}
+                                    transition={{ duration: 2, repeat: Infinity, repeatDelay: 4, delay: 0.75 }}
                                   />
                                   
                                   <circle cx="90" cy="80" r="10" fill="rgba(59, 130, 246, 0.2)" stroke="rgba(59, 130, 246, 0.8)"/>

@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 
 export default function AsymmetricEncryption() {  const [animationStep, setAnimationStep] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [animationSpeed, setAnimationSpeed] = useState(1500); // ms per step
+  const [animationSpeed, setAnimationSpeed] = useState(2200); // ms per step - slowed down for better readability
   const [animationInterval, setAnimationInterval] = useState<ReturnType<typeof setTimeout> | null>(null);
   
   // Animation steps
@@ -109,15 +109,14 @@ export default function AsymmetricEncryption() {  const [animationStep, setAnima
                 <p className="text-center text-sm mt-1">Bob</p>
               </div>
               
-              {/* Message */}
-              <motion.div 
+              {/* Message */}              <motion.div 
                 className="absolute top-44 left-28 bg-gray-700 rounded-md p-3 shadow-md"
                 initial={{ opacity: 0 }}
                 animate={{ 
                   opacity: animationStep >= 1 ? 1 : 0,
                   scale: animationStep >= 2 ? 0.7 : 1
                 }}
-                transition={{ duration: 0.5 }}
+                transition={{ duration: 1.0 }}
               >
                 <p className="text-sm font-mono">Hello Bob!</p>
               </motion.div>
@@ -130,7 +129,7 @@ export default function AsymmetricEncryption() {  const [animationStep, setAnima
                     className="absolute top-20 right-36 bg-green-900/40 rounded-md p-1 shadow-md border border-green-500"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2, duration: 0.5 }}
+                    transition={{ delay: 0.2, duration: 1.0 }}
                   >
                     <p className="text-xs font-mono">Public Key</p>
                   </motion.div>
@@ -140,7 +139,7 @@ export default function AsymmetricEncryption() {  const [animationStep, setAnima
                     className="absolute top-20 right-10 bg-red-900/40 rounded-md p-1 shadow-md border border-red-500"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.4, duration: 0.5 }}
+                    transition={{ delay: 0.4, duration: 1.0 }}
                   >
                     <p className="text-xs font-mono">Private Key</p>
                   </motion.div>
@@ -156,14 +155,14 @@ export default function AsymmetricEncryption() {  const [animationStep, setAnima
                     }}
                     initial={{ scaleX: 0 }}
                     animate={{ scaleX: animationStep >= 0 ? 1 : 0 }}
-                    transition={{ delay: 0.6, duration: 0.8 }}
+                    transition={{ delay: 0.6, duration: 1.6 }}
                   />
                   
                   <motion.div 
                     className="absolute left-40 top-10 bg-green-900/40 rounded-md p-1 shadow-md border border-green-500"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: animationStep >= 0 ? 1 : 0 }}
-                    transition={{ delay: 1.4, duration: 0.5 }}
+                    transition={{ delay: 1.4, duration: 1.0 }}
                   >
                     <p className="text-xs font-mono">Bob's Public Key</p>
                   </motion.div>
@@ -181,8 +180,8 @@ export default function AsymmetricEncryption() {  const [animationStep, setAnima
                     x: animationStep >= 3 ? 220 : 0
                   }}
                   transition={{ 
-                    x: { delay: animationStep >= 3 ? 0.2 : 0, duration: 0.8 },
-                    opacity: { duration: 0.5 }
+                    x: { delay: animationStep >= 3 ? 0.4 : 0, duration: 1.6 },
+                    opacity: { duration: 1.0 }
                   }}
                 >
                   <p className="text-xs font-mono">A7F3...B2E9</p>
@@ -195,7 +194,7 @@ export default function AsymmetricEncryption() {  const [animationStep, setAnima
                   className="absolute top-36 left-40"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  transition={{ duration: 0.5 }}
+                  transition={{ duration: 1.0 }}
                 >
                   <span className="text-lg">🔒</span>
                 </motion.div>
@@ -206,7 +205,7 @@ export default function AsymmetricEncryption() {  const [animationStep, setAnima
                   className="absolute top-36 right-40"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  transition={{ duration: 0.5 }}
+                  transition={{ duration: 1.0 }}
                 >
                   <span className="text-lg">🔓</span>
                 </motion.div>
@@ -218,7 +217,7 @@ export default function AsymmetricEncryption() {  const [animationStep, setAnima
                   className="absolute top-44 right-28 bg-gray-700 rounded-md p-3 shadow-md"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  transition={{ duration: 0.5 }}
+                  transition={{ duration: 1.0 }}
                 >
                   <p className="text-sm font-mono">Hello Bob!</p>
                 </motion.div>

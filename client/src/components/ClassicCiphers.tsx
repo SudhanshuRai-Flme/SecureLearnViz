@@ -22,10 +22,9 @@ export default function ClassicCiphers() {
   const [plaintext, setPlaintext] = useState('');
   const [ciphertext, setCiphertext] = useState('');
   const [key, setKey] = useState('3'); // Default key for Caesar
-  const [activeTab, setActiveTab] = useState('caesar');
-  const [animationStep, setAnimationStep] = useState(0);
+  const [activeTab, setActiveTab] = useState('caesar');  const [animationStep, setAnimationStep] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [animationSpeed, setAnimationSpeed] = useState(800); // ms per step
+  const [animationSpeed, setAnimationSpeed] = useState(1400); // ms per step - slowed down for better readability
   
   // Define a more specific type for animation steps to avoid implicit any warnings
   type AnimationStep = {
@@ -948,21 +947,18 @@ export default function ClassicCiphers() {
                                   <div className="mt-4 bg-gray-700/50 p-2 rounded text-xs">
                                     {/* Simplified alphabet display showing just the relevant positions */}
                                     <div className="flex justify-center space-x-4 items-center font-mono">
-                                      <div className="flex flex-col items-center"><motion.div
-                                          className="w-8 h-8 flex items-center justify-center rounded bg-blue-900/50 border border-blue-500"
-                                          animate={{ scale: [1, 1.1, 1] }}
-                                          transition={{ duration: 1, repeat: Infinity }}
-                                        >                                          {currentStep.alphabet && typeof currentStep.alphabet === 'string' && 
+                                      <div className="flex flex-col items-center">                                    <motion.div
+                                          className="w-8 h-8 flex items-center justify-center rounded bg-blue-900/50 border border-blue-500"                                          animate={{ scale: [1, 1.1, 1] }}
+                                          transition={{ duration: 3.5, repeat: Infinity }}
+                                        >{currentStep.alphabet && typeof currentStep.alphabet === 'string' && 
                                            currentStep.originalPosition !== undefined ? 
                                             currentStep.alphabet[currentStep.originalPosition] : ''}
                                         </motion.div>
                                         <div className="mt-1">Position {(currentStep.originalPosition ?? 0) + 1}</div>
                                       </div>
-                                      
-                                      <motion.div 
-                                        className="text-lg"
-                                        animate={{ x: [0, 10, 0] }}
-                                        transition={{ duration: 1.5, repeat: Infinity }}
+                                        <motion.div 
+                                        className="text-lg"                                        animate={{ x: [0, 10, 0] }}
+                                        transition={{ duration: 3.5, repeat: Infinity }}
                                       >
                                         {currentStep.isDecrypt ? '←' : '→'}
                                         <div className="text-xs mt-1">Shift {currentStep.isDecrypt ? '-' : '+'}{currentStep.currentShift}</div>
@@ -971,8 +967,8 @@ export default function ClassicCiphers() {
                                       <div className="flex flex-col items-center">                                        <motion.div
                                           className="w-8 h-8 flex items-center justify-center rounded bg-green-900/50 border border-green-500"
                                           animate={{ scale: [1, 1.1, 1] }}
-                                          transition={{ duration: 1, repeat: Infinity, delay: 0.5 }}
-                                        >                                          {currentStep.alphabet && typeof currentStep.alphabet === 'string' && 
+                                          transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
+                                        >{currentStep.alphabet && typeof currentStep.alphabet === 'string' && 
                                            currentStep.newPosition !== undefined ? 
                                             currentStep.alphabet[currentStep.newPosition] : ''}
                                         </motion.div>
@@ -1079,13 +1075,12 @@ export default function ClassicCiphers() {
                                         >
                                           {cell}
                                         </motion.span>
-                                      ) : (cell === '*' ? 
-                                        <motion.span 
+                                      ) : (cell === '*' ?                                        <motion.span 
                                           className="text-gray-400 opacity-90"
                                           initial={{ opacity: 0 }}
                                           animate={{ opacity: [0, 0.9, 0.6, 0.9] }}
                                           transition={{ 
-                                            duration: 2, 
+                                            duration: 3.5, 
                                             repeat: Infinity,
                                             repeatType: "reverse" 
                                           }}
