@@ -395,7 +395,9 @@ export default function XSSAttackVisualizer() {
                   <p className="text-gray-400">
                     {sanitizeOutput 
                       ? "The browser displays the content as plain text because the HTML was properly escaped. The code is not executed." 
-                      : "The browser renders the HTML and executes any JavaScript, potentially allowing attackers to steal cookies, redirect users, or deface the website."}
+                      : /<script|onerror=|onload=|javascript:/i.test(userInput)
+                        ? "The browser renders the HTML and executes any JavaScript, potentially allowing attackers to steal cookies, redirect users, or deface the website."
+                        : "No malicious payload detected. The browser renders the content as normal, with no special behavior or risk."}
                   </p>
                 </div>
               </motion.div>
