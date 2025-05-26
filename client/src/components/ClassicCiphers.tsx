@@ -898,16 +898,14 @@ export default function ClassicCiphers() {
                             
                             {/* Current operation */}
                             {(currentStep.currentIndex ?? -1) >= 0 && !currentStep.complete && !currentStep.isNonAlpha && (
-                              <div className="my-4 flex flex-col items-center">
-                                <div className="flex items-center space-x-6">
+                              <div className="my-4 flex flex-col items-center">                                <div className="flex items-center space-x-6">
                                   <div className="flex flex-col items-center">
                                     <div className="w-12 h-12 rounded-full bg-blue-900/30 border border-primary flex items-center justify-center text-lg">
                                       {currentStep.currentChar}
                                     </div>
                                     <span className="text-xs mt-1">Character</span>
                                   </div>
-                                  
-                                  <motion.div 
+                                    <motion.div 
                                     className="w-8 text-center"
                                     initial={{ x: -10, opacity: 0 }}
                                     animate={{ x: 0, opacity: 1 }}
@@ -924,90 +922,19 @@ export default function ClassicCiphers() {
                                     initial={{ x: 10, opacity: 0 }}
                                     animate={{ x: 0, opacity: 1 }}
                                     transition={{ delay: 0.2 }}
-                                  >
-                                    <TooltipProvider>
-                                      <Tooltip>
-                                        <TooltipTrigger asChild>
-                                          <div className="w-12 h-12 rounded-full bg-green-900/30 border border-green-500 flex items-center justify-center text-lg cursor-help">
-                                            {currentStep.encryptedChar}
-                                          </div>
-                                        </TooltipTrigger>
-                                        <TooltipContent>
-                                          <p className="text-xs">                                            {currentStep.isDecrypt ? 
-                                              `Original position: ${(currentStep.originalPosition ?? 0) + 1}, shifted by -${currentStep.currentShift ?? 0}` : 
-                                              `Original position: ${(currentStep.originalPosition ?? 0) + 1}, shifted by +${currentStep.currentShift ?? 0}`}
-                                          </p>
-                                        </TooltipContent>
-                                      </Tooltip>
-                                    </TooltipProvider>
-                                    <span className="text-xs mt-1">Result</span>
-                                  </motion.div>
-                                </div>
-                                  {currentStep.alphabet && typeof currentStep.alphabet === 'string' && (
-                                  <div className="mt-4 bg-gray-700/50 p-2 rounded text-xs">
-                                    {/* Simplified alphabet display showing just the relevant positions */}
-                                    <div className="flex justify-center space-x-4 items-center font-mono">
-                                      <div className="flex flex-col items-center">                                    <motion.div
-                                          className="w-8 h-8 flex items-center justify-center rounded bg-blue-900/50 border border-blue-500"                                          animate={{ scale: [1, 1.1, 1] }}
-                                          transition={{ duration: 3.5, repeat: Infinity }}
-                                        >{currentStep.alphabet && typeof currentStep.alphabet === 'string' && 
-                                           currentStep.originalPosition !== undefined ? 
-                                            currentStep.alphabet[currentStep.originalPosition] : ''}
-                                        </motion.div>
-                                        <div className="mt-1">Position {(currentStep.originalPosition ?? 0) + 1}</div>
-                                      </div>
-                                        <motion.div 
-                                        className="text-lg"                                        animate={{ x: [0, 10, 0] }}
-                                        transition={{ duration: 3.5, repeat: Infinity }}
-                                      >
-                                        {currentStep.isDecrypt ? '←' : '→'}
-                                        <div className="text-xs mt-1">Shift {currentStep.isDecrypt ? '-' : '+'}{currentStep.currentShift}</div>
-                                      </motion.div>
-                                      
-                                      <div className="flex flex-col items-center">                                        <motion.div
-                                          className="w-8 h-8 flex items-center justify-center rounded bg-green-900/50 border border-green-500"
-                                          animate={{ scale: [1, 1.1, 1] }}
-                                          transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
-                                        >{currentStep.alphabet && typeof currentStep.alphabet === 'string' && 
-                                           currentStep.newPosition !== undefined ? 
-                                            currentStep.alphabet[currentStep.newPosition] : ''}
-                                        </motion.div>
-                                        <div className="mt-1">Position {currentStep.newPosition !== undefined ? currentStep.newPosition + 1 : ''}</div>
-                                      </div>
+                                  ><div className="w-12 h-12 rounded-full bg-green-900/30 border border-green-500 flex items-center justify-center text-lg">
+                                      {currentStep.encryptedChar}
                                     </div>
-                                  </div>
-                                )}
-                              </div>
-                            )}
-                              {/* Current result */}
-                            {currentStep.currentResult && (
-                              <div className="mt-6 w-full">
-                                <div className="grid grid-flow-col auto-cols-max gap-1 justify-center">
-                                  {currentStep.currentResult.split('').map((char, idx) => (
-                                    <motion.div 
-                                      key={idx}
-                                      className="w-10 h-10 flex items-center justify-center border border-gray-700 rounded"
-                                      initial={{ opacity: 0, scale: 0.8 }}
-                                      animate={{ opacity: 1, scale: 1 }}
-                                      transition={{ delay: idx * 0.05 }}
-                                    >
-                                      {char}
-                                    </motion.div>
-                                  ))}
-                                </div>                                <div className="mt-1 text-center text-xs">
-                                  {currentStep.isDecrypt ? "Decrypted result" : "Encrypted result"}
-                                </div>
-                              </div>
-                            )}
-                            
-                            {/* Final result */}
+                                    <span className="text-xs mt-1">Result</span>
+                                  </motion.div>                                </div>                              </div>
+                            )}                              {/* Final result */}
                             {currentStep.complete && (
                               <motion.div 
                                 className="mt-6 p-3 bg-primary/20 border border-primary rounded-lg w-full text-center"
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
                               >
-                                <span className="block text-sm mb-1">Final Result:</span>
+                                <span className="block text-sm mb-1">{currentStep.isDecrypt ? "Plaintext" : "Ciphertext"}</span>
                                 <span className="font-mono text-lg">{currentStep.currentResult}</span>
                               </motion.div>
                             )}
