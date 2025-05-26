@@ -7,19 +7,29 @@ import CryptoFundamentals from '@/components/CryptoFundamentals';
 import ClassicCiphers from '@/components/ClassicCiphers';
 import SymmetricEncryption from '@/components/SymmetricEncryption';
 import AsymmetricEncryption from '@/components/AsymmetricEncryption';
+import { useLocation } from 'wouter';
 
 export default function CryptoPage() {
-  // Create a dummy setActiveTab function that meets the type requirements
-  const setActiveTab = (tab: "network" | "os" | "owasp" | "killchain" | "crypto") => {
-    // Special handling for non-crypto tabs - redirect to home page
-    if (tab !== "crypto") {
-      window.location.href = "/#" + tab;
-    }
-  };
+  const [, setLocation] = useLocation();
   
+  const handleTabChange = (tab: "network" | "os" | "owasp" | "killchain" | "crypto") => {
+    if (tab === "crypto") {
+      // Already on crypto page, do nothing
+      return;
+    }
+    // Navigate to home page with the appropriate hash
+    const hashMap = {
+      "network": "network-fundamentals",
+      "os": "os-fundamentals", 
+      "owasp": "owasp-top-10",
+      "killchain": "killchain"
+    };
+    setLocation(`/#${hashMap[tab]}`);
+  };
+
   return (
     <div className="app-container max-w-screen-xl mx-auto px-4 sm:px-6">
-      <Header setActiveTab={setActiveTab} />
+      <Header />
       
       <section className="py-8 sm:py-12">
         <div className="flex flex-col items-center text-center">
@@ -32,7 +42,7 @@ export default function CryptoPage() {
         </div>
       </section>
       
-      <MainNavigation activeTab="crypto" setActiveTab={setActiveTab} />
+      <MainNavigation activeTab="crypto" setActiveTab={handleTabChange} />
       
       <motion.div
         initial={{ opacity: 0 }}

@@ -14,19 +14,66 @@ import HeapAllocatorVisualizer from "@/components/HeapAllocatorVisualizer";
 import XSSAttackVisualizer from "@/components/XSSAttackVisualizer";
 import CyberKillChainVisualizer from "@/components/CyberKillChainVisualizer";
 import Footer from "@/components/Footer";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { useLocation } from "wouter";
 
 export default function HomePage() {
   const [activeTab, setActiveTab] = useState<"network" | "os" | "owasp" | "killchain" | "crypto">("network");
+  const [, setLocation] = useLocation();
+
+  // Handle tab changes including crypto navigation
+  const handleTabChange = (tab: "network" | "os" | "owasp" | "killchain" | "crypto") => {
+    setActiveTab(tab); // Always update the active tab state first
+    if (tab === "crypto") {
+      setLocation("/crypto");
+    }
+  };
+
+  // Hash navigation effect
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.replace('#', '');
+      if (hash) {
+        // Map hash fragments to tab names
+        const sectionToTab: Record<string, typeof activeTab> = {
+          'network-fundamentals': 'network',
+          'os-fundamentals': 'os',
+          'owasp-top-10': 'owasp',
+          'killchain': 'killchain'
+        };
+        
+        const targetTab = sectionToTab[hash];
+        if (targetTab) {
+          setActiveTab(targetTab);
+          // Small delay to ensure component is rendered before scrolling
+          setTimeout(() => {
+            document.getElementById(hash)?.scrollIntoView({ behavior: 'smooth' });
+          }, 100);
+        }
+      }
+    };
+
+    // Handle initial load and hash changes
+    window.addEventListener('hashchange', handleHashChange);
+    handleHashChange(); // Handle initial load
+    
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+
   return (
     <div className="app-container max-w-screen-xl mx-auto px-4 sm:px-6">
-      <Header setActiveTab={setActiveTab} />
+      <Header setActiveTab={handleTabChange} />
       <Hero />
-      <MainNavigation activeTab={activeTab} setActiveTab={setActiveTab} />
+      <MainNavigation activeTab={activeTab} setActiveTab={handleTabChange} />
       
       {activeTab === "network" && (
-        <div id="network">
+        <motion.div
+          id="network-fundamentals"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, ease: "easeInOut" }}
+        >
           <NetworkFundamentals />
           <div className="my-12" id="tls-handshake">
             <h2 className="text-3xl font-bold mb-6">TLS Handshake Visualization</h2>
@@ -40,15 +87,16 @@ export default function HomePage() {
             <h2 className="text-3xl font-bold mb-6">Packet Dissector</h2>
             <PacketDissector />
           </div>
-        </div>
+        </motion.div>
       )}
       {activeTab === "os" && (
         <motion.div
-          id="os"
+          id="os-fundamentals"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, ease: "easeInOut" }}
         >
+          <OSFundamentals />
           <div className="my-12">
             <h2 className="text-3xl font-bold mb-6">Virtual Memory & Page Protection</h2>
             <PageProtectionVisualizer />
@@ -62,7 +110,7 @@ export default function HomePage() {
       )}
       {activeTab === "owasp" && (
         <motion.div
-          id="owasp"
+          id="owasp-top-10"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, ease: "easeInOut" }}
@@ -85,27 +133,6 @@ export default function HomePage() {
           transition={{ duration: 0.5, ease: "easeInOut" }}
         >
           <CyberKillChainVisualizer />
-        </motion.div>
-      )}
-      
-      {activeTab === "crypto" && (
-        <motion.div
-          id="redirect"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, ease: "easeInOut" }}
-          onAnimationComplete={() => {
-            window.location.href = "/crypto";
-          }}
-        >
-          <div className="flex justify-center items-center py-20">
-            <div className="text-center">
-              <div className="inline-block animate-spin text-primary text-4xl mb-4">
-                <i className="ri-loader-4-line"></i>
-              </div>
-              <p className="text-light">Redirecting to Cryptography Module...</p>
-            </div>
-          </div>
         </motion.div>
       )}
       
