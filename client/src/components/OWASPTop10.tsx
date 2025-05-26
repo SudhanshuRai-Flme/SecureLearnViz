@@ -51,6 +51,16 @@ function useOwaspDescription(selectedVulnerability: string) {
   return description;
 }
 
+// Define classic SQL Injection patterns
+const injectionPatterns = [
+  /'\s*OR\s*'\d+'\s*=\s*'\d+/i,
+  /--/,
+  /;--/,
+  /'\s*OR\s*1=1/i,
+  /'\s*OR\s*'1'='1/i,
+  /'\s*OR\s*1=1--/i,
+];
+
 export default function OWASPTop10() {
   const [payload, setPayload] = useState<string>("admin' OR '1'='1");
   const [isVulnerabilityExploited, setIsVulnerabilityExploited] = useState<boolean>(false);
@@ -63,6 +73,7 @@ export default function OWASPTop10() {
     isBlocked: false,
     message: ""
   });
+  const [sqlInjectionResult, setSqlInjectionResult] = useState<{ shown: boolean; isInjection: boolean }>({ shown: false, isInjection: false });
   const attackVectorRef = useRef<HTMLDivElement>(null);
 
   // WAF Detection Patterns
@@ -149,6 +160,13 @@ export default function OWASPTop10() {
     // Check if attack is detected (for alert messaging)
     const isAttackDetected = attackPatterns.some(pattern => pattern.test(payload));
     
+    // --- SQL Injection detection refinement ---
+    // Only for SQL Injection visualizer (selectedVulnerability === 'injection')
+    let isInjection = false;
+    if (selectedVulnerability === 'injection') {
+      isInjection = injectionPatterns.some(pattern => pattern.test(payload));
+    }
+
     // Update alert state based on protection mechanisms
     let message: string;
     let alertBlocked: boolean;
@@ -170,6 +188,13 @@ export default function OWASPTop10() {
     setTimeout(() => {
       setAlertState(prev => ({ ...prev, show: false }));
       setIsAnimating(false);
+    }, 3000);
+
+    // --- Show SQLi result immediately ---
+    setSqlInjectionResult({ shown: true, isInjection });
+    // Hide SQLi result after 3 seconds
+    setTimeout(() => {
+      setSqlInjectionResult(prev => ({ ...prev, shown: false }));
     }, 3000);
   };
 
@@ -284,7 +309,7 @@ export default function OWASPTop10() {
                   }}
                   exit={{ opacity: 0, scale: 0.8 }}
                   transition={{ duration: 0.3 }}
-                  className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-20 sm:w-20 sm:h-24 md:w-24 md:h-28 bg-secondary/20 rounded-lg flex flex-col items-center justify-center border-2 border-secondary"
+                  className="absolute top-[30%] left-1/2 transform -translate-x-1/2 w-16 h-20 sm:w-20 sm:h-24 md:w-24 md:h-28 bg-secondary/20 rounded-lg flex flex-col items-center justify-center border-2 border-secondary"
                   data-component="waf"
                 >
                   <i className="ri-shield-check-line text-lg sm:text-xl md:text-2xl text-secondary"></i>
@@ -449,35 +474,53 @@ export default function OWASPTop10() {
             </div>
           </div>
           {/* Result Display */}
-          {isVulnerabilityExploited && (
-            <div className={`p-3 rounded-lg border font-mono text-sm ${attackSucceeds ? 'bg-surface border-accent' : 'bg-surface border-secondary'}`}>
-              <div className={`flex items-center mb-2 ${attackSucceeds ? 'text-accent' : 'text-secondary'}`}>
-                <i className={`${attackSucceeds ? 'ri-error-warning-line' : 'ri-shield-check-line'} mr-2`}></i>
-                <span>{attackSucceeds ? 'Vulnerability Exploited!' : 'Attack Prevented!'}</span>
-              </div>
-              <div className="text-xs">
-                {attackSucceeds ? (
-                  <>
-                    <p className="text-gray-400">The malicious payload modified the SQL query to:</p>
-                    <p className="mt-1 overflow-x-auto whitespace-nowrap text-accent">
-                      SELECT * FROM users WHERE username = '{payload}' AND password = 'password'
-                    </p>
-                    <p className="mt-2 text-gray-400">This always evaluates to TRUE, bypassing authentication.</p>
-                  </>
+          {selectedVulnerability === "injection" && sqlInjectionResult.shown && (
+            <AnimatePresence>
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3 }}
+                className={`p-4 rounded mb-4 ${sqlInjectionResult.isInjection && (wafEnabled || useSanitizedInput) ? "bg-green-600 text-white" : sqlInjectionResult.isInjection ? "bg-red-600 text-white" : "bg-green-600 text-white"}`}
+              >
+                {sqlInjectionResult.isInjection ? (
+                  useSanitizedInput ? (
+                    <>
+                      <div className="font-bold mb-1">🧹 Attack prevented by Input Sanitization</div>
+                      <div>Input sanitization neutralized the SQL injection attempt.</div>
+                      <div className="mt-2 font-mono text-xs bg-black/30 p-2 rounded overflow-x-auto">
+                        SELECT * FROM users WHERE username = '{getSanitizedPayload()}' AND password = 'password'
+                      </div>
+                    </>
+                  ) : wafEnabled ? (
+                    <>
+                      <div className="font-bold mb-1">🛡️ Attack prevented by Web Application Firewall (WAF)</div>
+                      <div>The WAF detected and blocked the SQL injection attempt.</div>
+                      <div className="mt-2 font-mono text-xs bg-black/30 p-2 rounded overflow-x-auto">
+                        SELECT * FROM users WHERE username = '{payload}' AND password = 'password'
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="font-bold mb-1">🚨 Vulnerability Exploited!</div>
+                      <div>The malicious payload modified the SQL query to:</div>
+                      <div className="mt-2 font-mono text-xs bg-black/30 p-2 rounded overflow-x-auto">
+                        SELECT * FROM users WHERE username = '{payload}' AND password = 'password'
+                      </div>
+                      <div className="mt-2">This always evaluates to TRUE, bypassing authentication.</div>
+                    </>
+                  )
                 ) : (
                   <>
-                    <p className="text-gray-400">
-                      {wafEnabled ? 'The Web Application Firewall (WAF) detected and blocked the malicious request.' : 
-                                   'Input sanitization prevented the SQL injection by escaping special characters.'}
-                    </p>
-                    <p className="mt-1 overflow-x-auto whitespace-nowrap text-secondary">
-                      SELECT * FROM users WHERE username = '{getSanitizedPayload()}' AND password = 'password'
-                    </p>
-                    <p className="mt-2 text-gray-400">The SQL query executes as intended, protecting the database.</p>
+                    <div className="font-bold mb-1">✅ No SQL Injection detected.</div>
+                    <div>Query executes normally:</div>
+                    <div className="mt-2 font-mono text-xs bg-black/30 p-2 rounded overflow-x-auto">
+                      SELECT * FROM users WHERE username = '{payload}' AND password = 'password'
+                    </div>
                   </>
                 )}
-              </div>
-            </div>
+              </motion.div>
+            </AnimatePresence>
           )}
         </div>
         {/* Defense Mechanisms */}
