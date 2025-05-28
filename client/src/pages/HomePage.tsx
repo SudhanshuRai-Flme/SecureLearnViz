@@ -14,17 +14,18 @@ import HeapAllocatorVisualizer from "@/components/HeapAllocatorVisualizer";
 import XSSAttackVisualizer from "@/components/XSSAttackVisualizer";
 import CyberKillChainVisualizer from "@/components/CyberKillChainVisualizer";
 import Footer from "@/components/Footer";
+import LinuxFundamentals from "@/components/LinuxFundamentals";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useLocation } from "wouter";
 
 export default function HomePage() {
-  const [activeTab, setActiveTab] = useState<"network" | "os" | "owasp" | "killchain" | "crypto">("network");
+  const [activeTab, setActiveTab] = useState<"network" | "os" | "linux" | "owasp" | "killchain" | "crypto">("network");
   const [, setLocation] = useLocation();
 
   // Handle tab changes including crypto navigation
-  const handleTabChange = (tab: "network" | "os" | "owasp" | "killchain" | "crypto") => {
-    setActiveTab(tab); // Always update the active tab state first
+  const handleTabChange = (tab: "network" | "os" | "linux" | "owasp" | "killchain" | "crypto") => {
+    setActiveTab(tab);
     if (tab === "crypto") {
       setLocation("/crypto");
     }
@@ -39,10 +40,10 @@ export default function HomePage() {
         const sectionToTab: Record<string, typeof activeTab> = {
           'network-fundamentals': 'network',
           'os-fundamentals': 'os',
+          'linux-fundamentals': 'linux',
           'owasp-top-10': 'owasp',
           'killchain': 'killchain'
         };
-        
         const targetTab = sectionToTab[hash];
         if (targetTab) {
           setActiveTab(targetTab);
@@ -66,7 +67,6 @@ export default function HomePage() {
       <Header setActiveTab={handleTabChange} />
       <Hero />
       <MainNavigation activeTab={activeTab} setActiveTab={handleTabChange} />
-      
       {activeTab === "network" && (
         <motion.div
           id="network-fundamentals"
@@ -101,11 +101,20 @@ export default function HomePage() {
             <h2 className="text-3xl font-bold mb-6">Virtual Memory & Page Protection</h2>
             <PageProtectionVisualizer />
           </div>
-          
           <div className="my-12">
             <h2 className="text-3xl font-bold mb-6">Heap Allocation & Fragmentation</h2>
             <HeapAllocatorVisualizer />
           </div>
+        </motion.div>
+      )}
+      {activeTab === "linux" && (
+        <motion.div
+          id="linux-fundamentals"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, ease: "easeInOut" }}
+        >
+          <LinuxFundamentals />
         </motion.div>
       )}
       {activeTab === "owasp" && (
