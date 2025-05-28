@@ -25,19 +25,8 @@ export default function OSFundamentals() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Left: Visualization */}
           <div className="flex flex-col items-center">
-            {/* Toggles above diagram */}
-            <div className="flex space-x-4 mb-6">
-              <div className="flex items-center space-x-2">
-                <Switch id="dep-toggle" checked={depEnabled} onCheckedChange={setDepEnabled} />
-                <Label htmlFor="dep-toggle" className="text-sm">Enable DEP</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Switch id="aslr-toggle" checked={aslrEnabled} onCheckedChange={setAslrEnabled} />
-                <Label htmlFor="aslr-toggle" className="text-sm">Enable ASLR</Label>
-              </div>
-            </div>
             {/* Animated Diagram */}
-            <div className="relative w-full max-w-xs h-96 bg-gray-900 rounded-2xl flex flex-col items-center justify-center p-4 shadow-lg border border-gray-800 overflow-visible mx-auto">
+            <div className="relative w-full max-w-xs min-h-[700px] h-[700px] bg-gray-900 rounded-2xl flex flex-col items-center justify-center p-8 shadow-lg border border-gray-800 overflow-hidden mx-auto">
               {/* CPU Icon */}
               <div className="flex flex-col items-center" style={{ position: 'absolute', left: '50%', top: 32, transform: 'translateX(-50%)' }}>
                 <i className="ri-cpu-line text-4xl md:text-5xl text-secondary drop-shadow" />
@@ -50,45 +39,80 @@ export default function OSFundamentals() {
                 <span className="text-xs text-gray-400 mt-1">Stack, Heap, Data</span>
               </div>
               {/* Process Icon */}
-              <div className="flex flex-col items-center" style={{ position: 'absolute', left: '50%', top: 'calc(100% - 64px)', transform: 'translateX(-50%)' }}>
+              <div className="flex flex-col items-center" style={{ position: 'absolute', left: '50%', top: 'calc(100% - 110px)', transform: 'translateX(-50%)' }}>
                 <i className="ri-task-line text-3xl md:text-4xl text-primary" />
                 <span className="text-base text-primary font-mono mt-2">PROCESS</span>
                 <span className="text-xs text-gray-400">User App</span>
               </div>
-              {/* Safe Access Arrow (Green) */}
-              <motion.div
-                initial={false}
-                animate={{ opacity: depEnabled ? 1 : 0.2 }}
-                className="absolute"
-                style={{ left: 'calc(50% - 100px)', top: 120, zIndex: 1 }}
+              {/* Unified SVG for Safe Access and Exploit Attempt */}
+              <svg
+                width="320"
+                height="600"
+                viewBox="0 0 320 600"
+                className="absolute left-1/2 top-0 -translate-x-1/2 pointer-events-none"
+                style={{ zIndex: 2 }}
               >
-                <svg width="32" height="120" className="block">
-                  <line x1="16" y1="0" x2="16" y2="120" stroke={depEnabled ? '#22c55e' : '#888'} strokeWidth="6" markerEnd="url(#arrowhead-green)" strokeLinecap="round" />
-                  <defs>
-                    <marker id="arrowhead-green" markerWidth="16" markerHeight="16" refX="8" refY="8" orient="auto" markerUnits="strokeWidth">
-                      <polygon points="0 0, 16 8, 0 16" fill={depEnabled ? '#22c55e' : '#888'} />
-                    </marker>
-                  </defs>
-                </svg>
-                <span className="block text-sm text-green-400 text-center mt-2 whitespace-nowrap">Safe Access</span>
-              </motion.div>
-              {/* Exploit Arrow (Red) */}
-              <motion.div
-                initial={false}
-                animate={{ opacity: (!depEnabled && !aslrEnabled) ? 1 : (!depEnabled && aslrEnabled) ? 1 : 0.2 }}
-                className="absolute"
-                style={{ left: 'calc(50% + 100px)', top: 120, zIndex: 1 }}
-              >
-                <svg width="32" height="120" className="block">
-                  <line x1="16" y1="0" x2="16" y2="120" stroke={(!depEnabled && (!aslrEnabled || aslrEnabled)) ? '#ef4444' : '#888'} strokeWidth="6" markerEnd="url(#arrowhead-red)" strokeLinecap="round" />
-                  <defs>
-                    <marker id="arrowhead-red" markerWidth="16" markerHeight="16" refX="8" refY="8" orient="auto" markerUnits="strokeWidth">
-                      <polygon points="0 0, 16 8, 0 16" fill={(!depEnabled && (!aslrEnabled || aslrEnabled)) ? '#ef4444' : '#888'} />
-                    </marker>
-                  </defs>
-                </svg>
-                <span className="block text-sm text-red-400 text-center mt-2 whitespace-nowrap">Exploit Attempt</span>
-              </motion.div>
+                {/* Safe Access Polyline (Green) */}
+                <motion.polyline
+                  points="160,72 160,210 160,500"
+                  fill="none"
+                  stroke={depEnabled ? '#22c55e' : '#888'}
+                  strokeWidth="7"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  initial={false}
+                  animate={{ opacity: depEnabled ? 0.65 : 0.18 }}
+                  markerEnd="url(#arrowhead-green)"
+                />
+                {/* Safe Access Label */}
+                <motion.text
+                  x="160"
+                  y="120"
+                  textAnchor="middle"
+                  fill="#22c55e"
+                  fontSize="16"
+                  fontFamily="monospace"
+                  initial={false}
+                  animate={{ opacity: depEnabled ? 1 : 0.2 }}
+                >
+                  Safe Access
+                </motion.text>
+                {/* Exploit Attempt Polyline (Red) */}
+                <motion.polyline
+                  points="220,72 220,210 160,350 160,500"
+                  fill="none"
+                  stroke={(!depEnabled) ? '#ef4444' : '#888'}
+                  strokeWidth="7"
+                  strokeDasharray="16 12"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  initial={false}
+                  animate={{ opacity: !depEnabled ? 0.65 : 0.18 }}
+                  markerEnd="url(#arrowhead-red)"
+                />
+                {/* Exploit Attempt Label */}
+                <motion.text
+                  x="220"
+                  y="120"
+                  textAnchor="middle"
+                  fill="#ef4444"
+                  fontSize="16"
+                  fontFamily="monospace"
+                  initial={false}
+                  animate={{ opacity: !depEnabled ? 1 : 0.2 }}
+                >
+                  Exploit Attempt
+                </motion.text>
+                {/* Arrowhead Markers */}
+                <defs>
+                  <marker id="arrowhead-green" markerWidth="16" markerHeight="16" refX="8" refY="8" orient="auto" markerUnits="strokeWidth">
+                    <polygon points="0 0, 16 8, 0 16" fill="#22c55e" />
+                  </marker>
+                  <marker id="arrowhead-red" markerWidth="16" markerHeight="16" refX="8" refY="8" orient="auto" markerUnits="strokeWidth">
+                    <polygon points="0 0, 16 8, 0 16" fill="#ef4444" />
+                  </marker>
+                </defs>
+              </svg>
             </div>
           </div>
 
@@ -140,18 +164,32 @@ export default function OSFundamentals() {
             </AnimatePresence>
             {/* Concept Summary Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
-              <div className="p-4 bg-gray-800 rounded-lg flex items-center space-x-3">
-                <i className="ri-file-forbid-line text-lg text-secondary" />
+              <div className="p-6 bg-gray-800 rounded-lg flex items-start space-x-4">
+                <i className="ri-file-forbid-line text-2xl text-secondary mt-1" />
                 <div>
-                  <div className="font-semibold text-secondary text-sm mb-1">DEP</div>
-                  <div className="text-gray-300 text-xs">Prevents execution of malicious code in data pages.</div>
+                  <div className="font-semibold text-secondary text-base mb-1">DEP (Data Execution Prevention)</div>
+                  <div className="text-gray-300 text-sm mb-2">Prevents execution of malicious code in data pages.</div>
+                  <ul className="list-disc list-inside text-gray-400 text-xs pl-1 space-y-1">
+                    <li>Marks certain memory regions (like the stack and heap) as non-executable.</li>
+                    <li>Stops code from running in areas meant only for data storage.</li>
+                    <li>Helps block buffer overflow and code injection attacks.</li>
+                    <li>Implemented in both hardware (CPU support) and software (OS-level).</li>
+                    <li>Commonly used in modern Windows, Linux, and macOS systems.</li>
+                  </ul>
                 </div>
               </div>
-              <div className="p-4 bg-gray-800 rounded-lg flex items-center space-x-3">
-                <i className="ri-key-2-line text-lg text-secondary" />
+              <div className="p-6 bg-gray-800 rounded-lg flex items-start space-x-4">
+                <i className="ri-key-2-line text-2xl text-secondary mt-1" />
                 <div>
-                  <div className="font-semibold text-secondary text-sm mb-1">ASLR</div>
-                  <div className="text-gray-300 text-xs">Randomizes memory addresses to stop predictable jumps.</div>
+                  <div className="font-semibold text-secondary text-base mb-1">ASLR (Address Space Layout Randomization)</div>
+                  <div className="text-gray-300 text-sm mb-2">Randomizes memory addresses to stop predictable jumps.</div>
+                  <ul className="list-disc list-inside text-gray-400 text-xs pl-1 space-y-1">
+                    <li>Randomly arranges the positions of key data areas (stack, heap, libraries, etc.) in memory.</li>
+                    <li>Makes it difficult for attackers to predict target addresses for exploits.</li>
+                    <li>Mitigates return-to-libc and ROP (Return-Oriented Programming) attacks.</li>
+                    <li>Works best when combined with DEP and other protections.</li>
+                    <li>Enabled by default in most modern operating systems.</li>
+                  </ul>
                 </div>
               </div>
             </div>

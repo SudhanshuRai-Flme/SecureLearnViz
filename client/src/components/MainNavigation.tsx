@@ -2,18 +2,15 @@ import { Button } from "@/components/ui/button";
 import { Link, useLocation } from "wouter";
 
 type MainNavigationProps = {
-  activeTab: "network" | "os" | "owasp" | "killchain" | "crypto";
-  setActiveTab: (tab: "network" | "os" | "owasp" | "killchain" | "crypto") => void;
+  activeTab: "network" | "os" | "linux" | "owasp" | "killchain" | "crypto";
+  setActiveTab: (tab: "network" | "os" | "linux" | "owasp" | "killchain" | "crypto") => void;
 };
 
 export default function MainNavigation({ activeTab, setActiveTab }: MainNavigationProps) {
   const [location] = useLocation();
   
-  const handleTabClick = (tab: "network" | "os" | "owasp" | "killchain" | "crypto", hash: string) => {
-    // Always delegate to setActiveTab - it knows how to handle each case
+  const handleTabClick = (tab: "network" | "os" | "linux" | "owasp" | "killchain" | "crypto", hash: string) => {
     setActiveTab(tab);
-    
-    // Only handle scrolling if we're on the home page and it's not crypto
     if (location === "/" && tab !== "crypto") {
       window.history.pushState(null, "", `/#${hash}`);
       setTimeout(() => {
@@ -39,6 +36,12 @@ export default function MainNavigation({ activeTab, setActiveTab }: MainNavigati
           className={`${activeTab === "os" ? "bg-primary text-light" : "bg-surface hover:bg-gray-800 text-light"} w-full sm:w-auto py-3 sm:py-2`}
         >
           OS Fundamentals
+        </Button>
+        <Button 
+          onClick={() => handleTabClick("linux", "linux-fundamentals")}
+          className={`${activeTab === "linux" ? "bg-primary text-light" : "bg-surface hover:bg-gray-800 text-light"} w-full sm:w-auto py-3 sm:py-2`}
+        >
+          Linux Fundamentals
         </Button>
         <Button 
           onClick={() => handleTabClick("owasp", "owasp-top-10")}
